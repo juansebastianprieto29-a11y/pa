@@ -1,7 +1,6 @@
 {
   "version": 2,
-  "framework": "php",
-  "buildCommand": "composer install --prefer-dist --no-dev && npm ci && npm run build && php scripts/maintenance/migrate.php",
+  "buildCommand": "composer install --prefer-dist --no-dev && npm ci && npm run build",
   "installCommand": "npm install && composer install --prefer-dist",
   "env": {
     "DB_CONNECTION": "pgsql",
