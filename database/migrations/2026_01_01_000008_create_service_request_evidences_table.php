@@ -17,20 +17,19 @@ class CreateServiceRequestEvidencesTable extends Migration
     {
         $this->execute("
             CREATE TABLE service_request_evidences (
-                id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                service_request_id BIGINT UNSIGNED NOT NULL,
-                uploaded_by BIGINT UNSIGNED NOT NULL,
-                evidence_type ENUM('before', 'during', 'after') NOT NULL,
+                id BIGSERIAL PRIMARY KEY,
+                service_request_id BIGINT NOT NULL,
+                uploaded_by BIGINT NOT NULL,
+                evidence_type VARCHAR(50) NOT NULL,
                 image_url VARCHAR(500) NOT NULL,
                 original_filename VARCHAR(255) NULL,
-                file_size INT UNSIGNED NULL,
+                file_size INTEGER NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
                 INDEX idx_service_request_id (service_request_id),
 
                 CONSTRAINT fk_evidence_service_request FOREIGN KEY (service_request_id) REFERENCES service_requests(id) ON DELETE CASCADE,
-                CONSTRAINT fk_evidence_user FOREIGN KEY (uploaded_by) REFERENCES users(id)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                CONSTRAINT fk_evidence_user FOREIGN KEY (uploaded_by) REFERENCES users(id))
         ");
     }
 

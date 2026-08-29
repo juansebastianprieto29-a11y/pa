@@ -17,18 +17,18 @@ class CreatePqrTable extends Migration
     {
         $this->execute("
             CREATE TABLE pqr (
-                id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                user_id BIGINT UNSIGNED NOT NULL,
+                id BIGSERIAL PRIMARY KEY,
+                user_id BIGINT NOT NULL,
                 ticket_code VARCHAR(20) NOT NULL UNIQUE,
-                type ENUM('peticion', 'queja', 'reclamo', 'sugerencia') NOT NULL,
+                type VARCHAR(50) NOT NULL,
                 subject VARCHAR(150) NOT NULL,
                 description TEXT NOT NULL,
-                status ENUM('pending', 'in_review', 'resolved', 'rejected') NOT NULL DEFAULT 'pending',
+                status VARCHAR(50) NOT NULL DEFAULT 'pending',
                 admin_response TEXT NULL,
-                responded_by BIGINT UNSIGNED NULL,
+                responded_by BIGINT NULL,
                 responded_at TIMESTAMP NULL,
                 created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 deleted_at TIMESTAMP NULL,
 
                 CONSTRAINT fk_pqr_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT,
@@ -38,8 +38,7 @@ class CreatePqrTable extends Migration
                 INDEX idx_pqr_status (status),
                 INDEX idx_pqr_type (type),
                 INDEX idx_pqr_created_at (created_at),
-                INDEX idx_pqr_deleted_at (deleted_at)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                INDEX idx_pqr_deleted_at (deleted_at))
         ");
     }
 

@@ -17,14 +17,14 @@ class CreateSurveysTable extends Migration
     {
         $this->execute("
             CREATE TABLE surveys (
-                id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                service_request_id BIGINT UNSIGNED NOT NULL UNIQUE,
-                customer_id BIGINT UNSIGNED NOT NULL,
-                overall_satisfaction TINYINT UNSIGNED NOT NULL,
+                id BIGSERIAL PRIMARY KEY,
+                service_request_id BIGINT NOT NULL UNIQUE,
+                customer_id BIGINT NOT NULL,
+                overall_satisfaction TINYINTEGER NOT NULL,
                 would_recommend BOOLEAN NOT NULL,
                 comments TEXT NULL,
                 created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 deleted_at TIMESTAMP NULL,
 
                 CONSTRAINT fk_surveys_service_request_id FOREIGN KEY (service_request_id) REFERENCES service_requests(id) ON DELETE CASCADE,
@@ -32,8 +32,7 @@ class CreateSurveysTable extends Migration
                 CONSTRAINT chk_overall_satisfaction CHECK (overall_satisfaction BETWEEN 1 AND 5),
 
                 INDEX idx_surveys_customer_id (customer_id),
-                INDEX idx_surveys_created_at (created_at)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                INDEX idx_surveys_created_at (created_at))
         ");
     }
 

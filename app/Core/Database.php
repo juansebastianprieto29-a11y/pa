@@ -49,13 +49,18 @@ class Database
     {
         $driver = self::$config['driver'] ?? 'mysql';
         $host = self::$config['host'] ?? '127.0.0.1';
-        $port = self::$config['port'] ?? 3306;
+        $port = self::$config['port'] ?? ($driver === 'pgsql' ? 5432 : 3306);
         $database = self::$config['database'] ?? '';
         $username = self::$config['username'] ?? 'root';
         $password = self::$config['password'] ?? '';
-        $charset = self::$config['charset'] ?? 'utf8mb4';
+        $charset = self::$config['charset'] ?? ($driver === 'pgsql' ? 'UTF8' : 'utf8mb4');
 
-        $dsn = "{$driver}:host={$host};port={$port};dbname={$database};charset={$charset}";
+        // Construir DSN según el driver
+        if ($driver === 'pgsql') {
+            $dsn = "pgsql:host={$host};port={$port};dbname={$database};user={$username};password={$password}";
+        } else {
+            $dsn = "{$driver}:host={$host};port={$port};dbname={$database};charset={$charset}";
+        }
 
         $attempt = 0;
         $lastException = null;
@@ -150,6 +155,15 @@ class Database
         $sql = "INSERT INTO {$table} ({$columns}) VALUES ({$placeholders})";
 
         self::query($sql, array_values($data));
+
+        // PostgreSQL: usar RETURNING id en lugar de lastInsertId()
+        $driver = self::$config['driver'] ?? 'mysql';
+        if ($driver === 'pgsql') {
+            // Para PostgreSQL, ejecutar otra query para obtener el último ID insertado
+            $lastIdQuery = "SELECT LASTVAL() as id";
+            $result = self::fetchOne($lastIdQuery);
+            return (int) ($result['id'] ?? 0);
+        }
 
         return (int) self::getConnection()->lastInsertId();
     }

@@ -26,7 +26,7 @@ class AddDriverLicenseStatusToUsers extends Migration
         $this->execute("
             ALTER TABLE users
                 ADD COLUMN driver_license_status
-                    ENUM('not_set', 'valid', 'expiring_soon', 'expired')
+                    VARCHAR(50)
                     NOT NULL DEFAULT 'not_set'
                     AFTER driver_license_document_url
         ");

@@ -21,25 +21,25 @@ class CreateUsersAndRolesTables extends Migration
         // Create users table
         $this->execute("
             CREATE TABLE users (
-                id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                id BIGSERIAL PRIMARY KEY,
                 email VARCHAR(255) NOT NULL UNIQUE,
                 password_hash VARCHAR(255) NOT NULL,
                 first_name VARCHAR(100) NOT NULL,
                 last_name VARCHAR(100) NOT NULL,
                 phone VARCHAR(20),
                 profile_picture_url VARCHAR(500) NULL,
-                account_status ENUM('active', 'suspended', 'deactivated', 'pending_verification') 
+                account_status VARCHAR(50) 
                     NOT NULL DEFAULT 'active' COMMENT 'MVP: Users active by default. Email verification planned for production.',
-                email_verification_status ENUM('unverified', 'verified') 
+                email_verification_status VARCHAR(50) 
                     NOT NULL DEFAULT 'unverified',
-                phone_verification_status ENUM('unverified', 'verified') 
+                phone_verification_status VARCHAR(50) 
                     NOT NULL DEFAULT 'unverified',
                 email_verified_at TIMESTAMP NULL,
                 phone_verified_at TIMESTAMP NULL,
                 last_login_at TIMESTAMP NULL,
                 last_login_ip VARCHAR(45) NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 deleted_at TIMESTAMP NULL,
                 
                 INDEX idx_email (email),
@@ -54,33 +54,29 @@ class CreateUsersAndRolesTables extends Migration
                 
                 CONSTRAINT chk_email_verification CHECK (
                     (email_verification_status = 'verified' AND email_verified_at IS NOT NULL) OR
-                    (email_verification_status = 'unverified')
-                ),
+                    (email_verification_status = 'unverified')),
                 CONSTRAINT chk_phone_verification CHECK (
                     (phone_verification_status = 'verified' AND phone_verified_at IS NOT NULL) OR
-                    (phone_verification_status = 'unverified')
-                )
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                    (phone_verification_status = 'unverified')))
         ");
 
         // Create roles table
         $this->execute("
             CREATE TABLE roles (
-                id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                id SERIAL PRIMARY KEY,
                 name VARCHAR(50) NOT NULL UNIQUE,
                 slug VARCHAR(50) NOT NULL UNIQUE,
                 description TEXT,
                 is_system_role BOOLEAN NOT NULL DEFAULT FALSE,
                 is_active BOOLEAN NOT NULL DEFAULT TRUE,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 
                 INDEX idx_name (name),
                 INDEX idx_slug (slug),
                 INDEX idx_is_active (is_active),
                 INDEX idx_is_system_role (is_system_role),
-                INDEX idx_active_system (is_active, is_system_role)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                INDEX idx_active_system (is_active, is_system_role))
         ");
 
         // Insert initial roles
@@ -96,15 +92,15 @@ class CreateUsersAndRolesTables extends Migration
         // Create user_roles table
         $this->execute("
             CREATE TABLE user_roles (
-                id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                user_id BIGINT UNSIGNED NOT NULL,
-                role_id INT UNSIGNED NOT NULL,
-                assigned_by BIGINT UNSIGNED NULL,
+                id BIGSERIAL PRIMARY KEY,
+                user_id BIGINT NOT NULL,
+                role_id INTEGER NOT NULL,
+                assigned_by BIGINT NULL,
                 assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 expires_at TIMESTAMP NULL,
                 is_active BOOLEAN NOT NULL DEFAULT TRUE,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
                 FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE,
@@ -122,27 +118,25 @@ class CreateUsersAndRolesTables extends Migration
                 INDEX idx_expires_active (expires_at, is_active),
                 
                 CONSTRAINT chk_expires_future CHECK (
-                    expires_at IS NULL OR expires_at > assigned_at
-                )
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                    expires_at IS NULL OR expires_at > assigned_at))
         ");
 
         // Create admin_access_requests table
         $this->execute("
             CREATE TABLE admin_access_requests (
-                id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                user_id BIGINT UNSIGNED NOT NULL,
-                requested_role_id INT UNSIGNED NOT NULL,
+                id BIGSERIAL PRIMARY KEY,
+                user_id BIGINT NOT NULL,
+                requested_role_id INTEGER NOT NULL,
                 justification TEXT NOT NULL,
-                status ENUM('pending', 'approved', 'rejected', 'cancelled') NOT NULL DEFAULT 'pending',
-                reviewed_by BIGINT UNSIGNED NULL,
-                approved_by BIGINT UNSIGNED NULL,
+                status VARCHAR(50) NOT NULL DEFAULT 'pending',
+                reviewed_by BIGINT NULL,
+                approved_by BIGINT NULL,
                 review_notes TEXT NULL,
                 rejection_reason TEXT NULL,
                 reviewed_at TIMESTAMP NULL,
                 approved_at TIMESTAMP NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
                 FOREIGN KEY (requested_role_id) REFERENCES roles(id) ON DELETE CASCADE,
@@ -161,13 +155,10 @@ class CreateUsersAndRolesTables extends Migration
                 
                 CONSTRAINT chk_approval_consistency CHECK (
                     (status = 'approved' AND approved_by IS NOT NULL AND approved_at IS NOT NULL) OR
-                    (status != 'approved')
-                ),
+                    (status != 'approved')),
                 CONSTRAINT chk_rejection_reason CHECK (
                     (status = 'rejected' AND rejection_reason IS NOT NULL) OR
-                    (status != 'rejected')
-                )
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                    (status != 'rejected')))
         ");
     }
 

@@ -21,7 +21,7 @@ class AddMissingRatingColumnsToServiceRequests extends Migration
     public function up(): void
     {
         if (!$this->columnExists('customer_rating')) {
-            $this->execute("ALTER TABLE service_requests ADD COLUMN customer_rating TINYINT UNSIGNED NULL COMMENT 'Customer rating 1-5'");
+            $this->execute("ALTER TABLE service_requests ADD COLUMN customer_rating TINYINTEGER NULL COMMENT 'Customer rating 1-5'");
         }
 
         if (!$this->columnExists('customer_feedback')) {
@@ -29,11 +29,11 @@ class AddMissingRatingColumnsToServiceRequests extends Migration
         }
 
         if (!$this->columnExists('punctuality_rating')) {
-            $this->execute("ALTER TABLE service_requests ADD COLUMN punctuality_rating TINYINT UNSIGNED NULL COMMENT 'Punctuality rating 1-5'");
+            $this->execute("ALTER TABLE service_requests ADD COLUMN punctuality_rating TINYINTEGER NULL COMMENT 'Punctuality rating 1-5'");
         }
 
         if (!$this->columnExists('service_quality_rating')) {
-            $this->execute("ALTER TABLE service_requests ADD COLUMN service_quality_rating TINYINT UNSIGNED NULL COMMENT 'Service quality rating 1-5'");
+            $this->execute("ALTER TABLE service_requests ADD COLUMN service_quality_rating TINYINTEGER NULL COMMENT 'Service quality rating 1-5'");
         }
     }
 
@@ -67,8 +67,7 @@ class AddMissingRatingColumnsToServiceRequests extends Migration
         $result = Database::fetchOne(
             "SELECT COLUMN_NAME FROM information_schema.COLUMNS
              WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'service_requests' AND COLUMN_NAME = ?",
-            [$column]
-        );
+            [$column]);
 
         return $result !== null;
     }

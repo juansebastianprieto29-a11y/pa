@@ -132,8 +132,7 @@ class SeedDemoUsersAndSampleData extends Migration
     {
         $existing = Database::fetchOne(
             'SELECT id FROM service_requests WHERE customer_id = ? AND mechanic_id = ? AND deleted_at IS NULL',
-            [$customerId, $mechanicId]
-        );
+            [$customerId, $mechanicId]);
 
         if ($existing !== null) {
             return (int)$existing['id'];

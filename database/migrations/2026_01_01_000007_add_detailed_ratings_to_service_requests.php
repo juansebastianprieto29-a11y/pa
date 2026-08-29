@@ -21,9 +21,9 @@ class AddDetailedRatingsToServiceRequests extends Migration
      */
     public function up(): void
     {
-        $this->execute("ALTER TABLE service_requests ADD COLUMN punctuality_rating TINYINT UNSIGNED NULL COMMENT 'Punctuality rating 1-5'");
+        $this->execute("ALTER TABLE service_requests ADD COLUMN punctuality_rating TINYINTEGER NULL COMMENT 'Punctuality rating 1-5'");
 
-        $this->execute("ALTER TABLE service_requests ADD COLUMN service_quality_rating TINYINT UNSIGNED NULL COMMENT 'Service quality rating 1-5'");
+        $this->execute("ALTER TABLE service_requests ADD COLUMN service_quality_rating TINYINTEGER NULL COMMENT 'Service quality rating 1-5'");
 
         $this->execute("ALTER TABLE service_requests ADD CONSTRAINT chk_punctuality_rating CHECK (punctuality_rating IS NULL OR (punctuality_rating >= 1 AND punctuality_rating <= 5))");
 

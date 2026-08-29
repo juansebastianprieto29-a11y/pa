@@ -24,16 +24,16 @@ class CreateServiceRequestsTable extends Migration
     {
         $this->execute("
             CREATE TABLE IF NOT EXISTS service_requests (
-                id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                id BIGSERIAL PRIMARY KEY,
                 
                 -- Public Tracking
                 service_code VARCHAR(20) NOT NULL UNIQUE COMMENT 'Public tracking code (e.g., SR-2024-001234)',
                 
                 -- Ownership & Assignment
-                customer_id BIGINT UNSIGNED NOT NULL COMMENT 'Customer who created the request',
-                vehicle_id BIGINT UNSIGNED NOT NULL COMMENT 'Vehicle needing service',
-                mechanic_id BIGINT UNSIGNED NULL COMMENT 'Assigned mechanic (null until assigned)',
-                resolved_by BIGINT UNSIGNED NULL COMMENT 'Mechanic who completed the service',
+                customer_id BIGINT NOT NULL COMMENT 'Customer who created the request',
+                vehicle_id BIGINT NOT NULL COMMENT 'Vehicle needing service',
+                mechanic_id BIGINT NULL COMMENT 'Assigned mechanic (null until assigned)',
+                resolved_by BIGINT NULL COMMENT 'Mechanic who completed the service',
                 
                 -- Emergency Details
                 emergency_type VARCHAR(50) NOT NULL COMMENT 'tire, battery, fuel, lockout, tow, engine, other',
@@ -55,19 +55,19 @@ class CreateServiceRequestsTable extends Migration
                 
                 -- Cancellation Details
                 cancellation_reason TEXT NULL COMMENT 'Why the request was cancelled',
-                cancelled_by BIGINT UNSIGNED NULL COMMENT 'User who cancelled (customer or admin)',
+                cancelled_by BIGINT NULL COMMENT 'User who cancelled (customer or admin)',
                 
                 -- Cost Management
                 estimated_cost DECIMAL(10, 2) NULL COMMENT 'Mechanic estimated cost',
                 final_cost DECIMAL(10, 2) NULL COMMENT 'Actual final cost',
                 
                 -- Customer Feedback
-                customer_rating TINYINT UNSIGNED NULL COMMENT 'Customer rating 1-5',
+                customer_rating TINYINTEGER NULL COMMENT 'Customer rating 1-5',
                 customer_feedback TEXT NULL COMMENT 'Customer review',
                 
                 -- Standard Timestamps
                 created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete (admin only)',
                 
                 -- Foreign Keys (ON DELETE RESTRICT for data integrity)
@@ -114,8 +114,7 @@ class CreateServiceRequestsTable extends Migration
                 INDEX idx_service_requests_status_priority (status, priority, requested_at),
                 
                 -- Geospatial Index for Location Queries
-                INDEX idx_service_requests_location (latitude, longitude)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+                INDEX idx_service_requests_location (latitude, longitude));
         ");
 
         echo "✓ Created service_requests table\n";

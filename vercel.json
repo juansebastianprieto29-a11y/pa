@@ -1,0 +1,39 @@
+{
+  "version": 2,
+  "framework": "php",
+  "buildCommand": "composer install --prefer-dist --no-dev && npm ci && npm run build && php scripts/maintenance/migrate.php",
+  "installCommand": "npm install && composer install --prefer-dist",
+  "env": {
+    "DB_CONNECTION": "pgsql",
+    "DB_HOST": "@db_host",
+    "DB_PORT": "5432",
+    "DB_DATABASE": "postgres",
+    "DB_USERNAME": "@db_username",
+    "DB_PASSWORD": "@db_password",
+    "APP_ENV": "production",
+    "APP_DEBUG": "false"
+  },
+  "functions": {
+    "public/index.php": {
+      "runtime": "php-8.2"
+    }
+  },
+  "routes": [
+    {
+      "src": "/dist/(.*)",
+      "dest": "/dist/$1"
+    },
+    {
+      "src": "/public/(.*)",
+      "dest": "/public/$1"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "/public/index.php"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/public/index.php"
+    }
+  ]
+}

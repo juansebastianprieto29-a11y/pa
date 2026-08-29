@@ -17,12 +17,12 @@ class CreateVehiclesTable extends Migration
     {
         $this->execute("
             CREATE TABLE IF NOT EXISTS vehicles (
-                id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                user_id BIGINT UNSIGNED NOT NULL COMMENT 'Owner of the vehicle',
+                id BIGSERIAL PRIMARY KEY,
+                user_id BIGINT NOT NULL COMMENT 'Owner of the vehicle',
                 license_plate VARCHAR(20) NOT NULL UNIQUE COMMENT 'Normalized license plate (uppercase, trimmed)',
                 make VARCHAR(50) NOT NULL COMMENT 'Vehicle manufacturer',
                 model VARCHAR(50) NOT NULL COMMENT 'Vehicle model',
-                year SMALLINT UNSIGNED NOT NULL COMMENT 'Manufacturing year',
+                year SMALLINTEGER NOT NULL COMMENT 'Manufacturing year',
                 color VARCHAR(30) COMMENT 'Vehicle color',
                 vin VARCHAR(17) UNIQUE COMMENT 'Vehicle Identification Number (17 chars)',
                 vehicle_type VARCHAR(20) NOT NULL DEFAULT 'sedan' COMMENT 'sedan, suv, truck, motorcycle, van, other',
@@ -32,7 +32,7 @@ class CreateVehiclesTable extends Migration
                 is_primary BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'Is this the user primary vehicle?',
                 status VARCHAR(20) NOT NULL DEFAULT 'active' COMMENT 'active or inactive',
                 created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete timestamp',
                 
                 -- Foreign Keys (ON DELETE RESTRICT to preserve historical integrity)
@@ -51,8 +51,7 @@ class CreateVehiclesTable extends Migration
                 
                 -- Composite Indexes for common query patterns
                 INDEX idx_vehicles_user_status (user_id, status),
-                INDEX idx_vehicles_user_deleted (user_id, deleted_at)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+                INDEX idx_vehicles_user_deleted (user_id, deleted_at));
         ");
 
         echo "✓ Created vehicles table\n";
