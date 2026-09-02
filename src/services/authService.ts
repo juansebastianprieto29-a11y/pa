@@ -109,6 +109,29 @@ export const authService = {
   async health(): Promise<ApiResponse<{ status: string; version: string }>> {
     return apiClient.get(API_ENDPOINTS.AUTH.HEALTH);
   },
+
+  async updateProfile(data: {
+    first_name?: string;
+    last_name?: string;
+    phone?: string;
+    id_number?: string;
+    driver_license_number?: string;
+    vehicle_brand?: string;
+    vehicle_model?: string;
+    vehicle_plate?: string;
+    vehicle_year?: string;
+    vehicle_color?: string;
+  }): Promise<ApiResponse<ApiUser>> {
+    return apiClient.put<ApiUser>(API_ENDPOINTS.AUTH.PROFILE || '/api/auth/profile', data);
+  },
+
+  async changePassword(currentPassword: string, newPassword: string): Promise<ApiResponse<null>> {
+    return apiClient.put<null>(API_ENDPOINTS.AUTH.PASSWORD || '/api/auth/password', {
+      current_password: currentPassword,
+      password: newPassword,
+      password_confirmation: newPassword
+    });
+  },
 };
 
 // ── Helper: convierte el rol del API (slug) al rol interno del frontend ───────
