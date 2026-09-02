@@ -81,10 +81,11 @@ export default function Sidebar({ isOpen = true, hidden = false }: SidebarProps)
   return (
     <motion.aside
       initial={{ x: -300 }}
-      animate={{ x: 0 }}
-      className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-dark-900/50 backdrop-blur-sm border-r border-anthracite-800 transition-all duration-300 overflow-y-auto ${
-        isOpen ? 'w-64' : 'w-20'
-      }`}
+      animate={{ x: isOpen ? 0 : -300 }}
+      transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+      className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-dark-900/50 backdrop-blur-sm border-r border-anthracite-800 transition-all duration-300 overflow-y-auto z-40 ${
+        isOpen ? 'w-64' : 'hidden'
+      } md:z-10 md:block md:translate-x-0`}
     >
       <nav className="p-3 space-y-1">
         {/* ── ADMIN ── */}

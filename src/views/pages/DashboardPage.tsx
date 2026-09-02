@@ -1,12 +1,14 @@
 import { motion } from 'framer-motion';
+import { useState } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Calendar, Wrench, Star, Menu } from 'lucide-react';
+import { Calendar, Wrench, Star, Menu, X } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import { useAuth } from '../../controllers/AuthContext';
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   // Mock data for charts
   const monthlyData = [
     { month: 'ENE', services: 80 },
@@ -34,48 +36,64 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-dark-950">
       <Navbar isAuthenticated userName={user?.name || 'Administrador'} hideNavLinks />
-      <Sidebar />
+      <Sidebar isOpen={sidebarOpen} />
 
-      <main className="ml-64 pt-16 p-8">
+      {/* Overlay para móvil cuando el sidebar está abierto */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 top-16 bg-black/50 z-30 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Main content con padding dinámico según tamaño de pantalla */}
+      <main className="pt-16 p-4 sm:p-6 md:p-8 md:ml-64 transition-all">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="space-y-6"
         >
-          {/* Header */}
+          {/* Header con botón hamburguesa para móvil */}
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
-              <p className="text-gray-400">Bienvenido de vuelta, Juan Gustavo</p>
+            <div className="flex-1">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Dashboard</h1>
+              <p className="text-gray-400 text-sm sm:text-base">Bienvenido de vuelta, Juan Gustavo</p>
             </div>
-            <button className="p-3 bg-dark-800 rounded-lg hover:bg-dark-700 transition-colors">
-              <Menu className="w-6 h-6 text-gray-400" />
+            <button 
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="md:hidden p-2 bg-dark-800 rounded-lg hover:bg-dark-700 transition-colors ml-4"
+            >
+              {sidebarOpen ? (
+                <X className="w-6 h-6 text-gray-400" />
+              ) : (
+                <Menu className="w-6 h-6 text-gray-400" />
+              )}
             </button>
           </div>
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Stats Grid - responsivo */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {/* Monthly Services */}
-            <div className="card p-6">
+            <div className="card p-4 sm:p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-gray-400 text-sm font-medium">Servicios Último Mes</h3>
-                <Calendar className="w-5 h-5 text-primary-500" />
+                <h3 className="text-gray-400 text-xs sm:text-sm font-medium">Servicios Último Mes</h3>
+                <Calendar className="w-5 h-5 text-primary-500 flex-shrink-0" />
               </div>
               <div className="space-y-2">
-                <p className="text-4xl font-bold text-white">125</p>
-                <p className="text-sm text-gray-500">SERVICIOS ULTIMO MES</p>
+                <p className="text-3xl sm:text-4xl font-bold text-white">125</p>
+                <p className="text-xs sm:text-sm text-gray-500">SERVICIOS ULTIMO MES</p>
               </div>
             </div>
 
             {/* User Recommendation */}
-            <div className="card p-6">
+            <div className="card p-4 sm:p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-gray-400 text-sm font-medium">Recomendación</h3>
-                <Star className="w-5 h-5 text-yellow-500" />
+                <h3 className="text-gray-400 text-xs sm:text-sm font-medium">Recomendación</h3>
+                <Star className="w-5 h-5 text-yellow-500 flex-shrink-0" />
               </div>
               <div className="flex items-center justify-center h-24">
                 <div className="relative">
-                  <svg className="w-24 h-24 transform -rotate-90">
+                  <svg className="w-20 h-20 sm:w-24 sm:h-24 transform -rotate-90">
                     <circle
                       cx="48"
                       cy="48"
@@ -98,104 +116,114 @@ export default function DashboardPage() {
                     />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-2xl font-bold text-white">98%</span>
+                    <span className="text-lg sm:text-2xl font-bold text-white">98%</span>
                   </div>
                 </div>
               </div>
-              <p className="text-sm text-gray-500 text-center mt-2">Recomendado por los usuarios</p>
+              <p className="text-xs sm:text-sm text-gray-500 text-center mt-2">Recomendado por los usuarios</p>
             </div>
 
             {/* Active Mechanics */}
-            <div className="card p-6">
+            <div className="card p-4 sm:p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-gray-400 text-sm font-medium">Mecánicos Activos</h3>
-                <Wrench className="w-5 h-5 text-purple-500" />
+                <h3 className="text-gray-400 text-xs sm:text-sm font-medium">Mecánicos Activos</h3>
+                <Wrench className="w-5 h-5 text-purple-500 flex-shrink-0" />
               </div>
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center">
-                  <Wrench className="w-8 h-8 text-white" />
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Wrench className="w-7 h-7 text-white" />
                 </div>
                 <div>
-                  <p className="text-4xl font-bold text-white">423</p>
-                  <p className="text-sm text-gray-500">ACTIVOS</p>
+                  <p className="text-3xl sm:text-4xl font-bold text-white">423</p>
+                  <p className="text-xs sm:text-sm text-gray-500">ACTIVOS</p>
                 </div>
               </div>
             </div>
 
             {/* Rating */}
-            <div className="card p-6">
+            <div className="card p-4 sm:p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-gray-400 text-sm font-medium">Calificación</h3>
-                <Star className="w-5 h-5 text-yellow-500" />
+                <h3 className="text-gray-400 text-xs sm:text-sm font-medium">Calificación</h3>
+                <Star className="w-5 h-5 text-yellow-500 flex-shrink-0" />
               </div>
               <div className="text-center">
-                <p className="text-5xl font-bold text-white mb-2">4.8</p>
+                <p className="text-4xl sm:text-5xl font-bold text-white mb-2">4.8</p>
                 <div className="flex justify-center gap-1 mb-2">
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className={`w-5 h-5 ${
+                      className={`w-4 h-4 sm:w-5 sm:h-5 ${
                         i < 4 ? 'text-yellow-500 fill-yellow-500' : 'text-gray-600'
                       }`}
                     />
                   ))}
                 </div>
-                <p className="text-sm text-gray-500">CALIFICACIÓN PROMEDIO DE SERVICIO</p>
+                <p className="text-xs sm:text-sm text-gray-500">CALIFICACIÓN PROMEDIO</p>
               </div>
             </div>
           </div>
 
-          {/* Charts Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Charts Row - stack en móvil */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Monthly History Chart */}
-            <div className="card p-6">
-              <h3 className="text-xl font-bold text-white mb-4">HISTORIAL MESES</h3>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={monthlyData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                  <XAxis dataKey="month" stroke="#9ca3af" />
-                  <YAxis stroke="#9ca3af" />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#1f2937',
-                      border: '1px solid #374151',
-                      borderRadius: '8px',
-                    }}
-                  />
-                  <Bar dataKey="services" fill="url(#colorGradient)" radius={[8, 8, 0, 0]} />
-                  <defs>
-                    <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#0ea5e9" />
-                      <stop offset="100%" stopColor="#a855f7" />
-                    </linearGradient>
-                  </defs>
-                </BarChart>
-              </ResponsiveContainer>
+            <div className="card p-4 sm:p-6">
+              <h3 className="text-lg sm:text-xl font-bold text-white mb-4">HISTORIAL MESES</h3>
+              <div className="w-full h-60 sm:h-80 lg:h-96 -mx-2 sm:mx-0">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={monthlyData} margin={{ top: 20, right: 10, left: -30, bottom: 60 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis 
+                      dataKey="month" 
+                      stroke="#9ca3af" 
+                      tick={{ fontSize: 12 }}
+                      angle={-45}
+                      textAnchor="end"
+                      height={80}
+                    />
+                    <YAxis stroke="#9ca3af" tick={{ fontSize: 12 }} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#1f2937',
+                        border: '1px solid #374151',
+                        borderRadius: '8px',
+                      }}
+                      cursor={{ fill: 'rgba(255, 255, 255, 0.1)' }}
+                    />
+                    <Bar dataKey="services" fill="url(#colorGradient)" radius={[8, 8, 0, 0]} />
+                    <defs>
+                      <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#0ea5e9" />
+                        <stop offset="100%" stopColor="#a855f7" />
+                      </linearGradient>
+                    </defs>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
 
             {/* Calendar */}
-            <div className="card p-6">
+            <div className="card p-4 sm:p-6 overflow-x-auto">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-white">ENERO</h3>
+                <h3 className="text-lg sm:text-xl font-bold text-white">ENERO</h3>
                 <div className="flex gap-2">
-                  <button className="p-2 hover:bg-dark-800 rounded-lg transition-colors">
+                  <button className="p-2 hover:bg-dark-800 rounded-lg transition-colors text-xs sm:text-base">
                     <span className="text-gray-400">&lt;</span>
                   </button>
-                  <button className="p-2 hover:bg-dark-800 rounded-lg transition-colors">
+                  <button className="p-2 hover:bg-dark-800 rounded-lg transition-colors text-xs sm:text-base">
                     <span className="text-gray-400">&gt;</span>
                   </button>
                 </div>
               </div>
-              <div className="grid grid-cols-7 gap-2">
+              <div className="grid grid-cols-7 gap-1 sm:gap-2">
                 {['D', 'L', 'M', 'M', 'J', 'V', 'S'].map((day) => (
-                  <div key={day} className="text-center text-gray-500 text-sm font-medium">
+                  <div key={day} className="text-center text-gray-500 text-xs sm:text-sm font-medium">
                     {day}
                   </div>
                 ))}
                 {calendarDays.map((day) => (
                   <div
                     key={day}
-                    className="aspect-square flex items-center justify-center text-sm text-gray-400 hover:bg-dark-800 rounded-lg cursor-pointer transition-colors"
+                    className="aspect-square flex items-center justify-center text-xs sm:text-sm text-gray-400 hover:bg-dark-800 rounded-lg cursor-pointer transition-colors"
                   >
                     {day}
                   </div>
@@ -205,32 +233,35 @@ export default function DashboardPage() {
           </div>
 
           {/* Comparison Chart */}
-          <div className="card p-6">
-            <h3 className="text-xl font-bold text-white mb-4">COMPARACIONES</h3>
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={comparisonData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis dataKey="year" stroke="#9ca3af" />
-                <YAxis stroke="#9ca3af" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#1f2937',
-                    border: '1px solid #374151',
-                    borderRadius: '8px',
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="value"
-                  stroke="#0ea5e9"
-                  strokeWidth={3}
-                  dot={{ fill: '#0ea5e9', r: 6 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+          <div className="card p-4 sm:p-6">
+            <h3 className="text-lg sm:text-xl font-bold text-white mb-4">COMPARACIONES</h3>
+            <div className="w-full h-60 sm:h-80 lg:h-96 -mx-2 sm:mx-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={comparisonData} margin={{ top: 20, right: 10, left: -30, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis dataKey="year" stroke="#9ca3af" tick={{ fontSize: 12 }} />
+                  <YAxis stroke="#9ca3af" tick={{ fontSize: 12 }} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#1f2937',
+                      border: '1px solid #374151',
+                      borderRadius: '8px',
+                    }}
+                    cursor={{ fill: 'rgba(255, 255, 255, 0.1)' }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    stroke="#0ea5e9"
+                    strokeWidth={3}
+                    dot={{ fill: '#0ea5e9', r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
             <div className="mt-4 text-center">
-              <p className="text-3xl font-bold text-white">2025</p>
-              <p className="text-gray-400">Más servicios</p>
+              <p className="text-3xl sm:text-4xl font-bold text-white">2025</p>
+              <p className="text-gray-400 text-sm sm:text-base">Más servicios</p>
             </div>
           </div>
         </motion.div>

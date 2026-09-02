@@ -72,35 +72,35 @@ export default function Navbar({ isAuthenticated = false, userName, userAvatar, 
     <nav className="fixed top-0 left-0 right-0 z-50 bg-dark-950/80 backdrop-blur-lg border-b border-anthracite-800">
       {/* RAMA: Soto - Navbar pegado a los bordes, sin max-width centrado */}
       {/* Contenedor a ancho completo con padding lateral */}
-      <div className="w-full px-4 sm:px-6">
+      <div className="w-full px-3 sm:px-4 md:px-6">
         {/* Fila principal del navbar con logo a la izquierda y links a la derecha */}
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-14 sm:h-16">
 
           {/* Logo P.A.R.C.E - RAMA: Soto - Redirige según rol del usuario */}
           {/* Usuario → /home | Mecánico → /mechanic-orders | Otros → / */}
           <Link to={user?.role === 'user' ? '/home' : user?.role === 'mechanic' ? '/mechanic-home' : user?.role === 'admin' ? '/dashboard' : '/'} className="flex-shrink-0">
-            <span className="text-2xl font-bold text-gradient">P.A.R.C.E</span>
+            <span className="text-xl sm:text-2xl font-bold text-gradient">P.A.R.C.E</span>
           </Link>
 
           {/* Navegación de escritorio - solo visible en pantallas medianas y grandes */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-6 md:gap-8">
             {/* Si NO está autenticado: muestra links públicos */}
             {!isAuthenticated ? (
               <>
                 {/* Link a servicios — apunta a /services (redirige a login si no está autenticado) */}
-                <Link to="/services" className="text-gray-300 hover:text-white transition-colors">
+                <Link to="/services" className="text-gray-300 hover:text-white transition-colors text-sm">
                   Servicios
                 </Link>
                 {/* Link a página de contacto */}
-                <Link to="/contact" className="text-gray-300 hover:text-white transition-colors">
+                <Link to="/contact" className="text-gray-300 hover:text-white transition-colors text-sm">
                   Contacto
                 </Link>
                 {/* Botón de iniciar sesión con estilo outline */}
-                <Link to="/login" className="btn-outline py-2 px-4">
+                <Link to="/login" className="btn-outline py-2 px-4 text-sm">
                   Iniciar Sesión
                 </Link>
                 {/* Botón de registro con estilo primario */}
-                <Link to="/register" className="btn-primary py-2 px-4">
+                <Link to="/register" className="btn-primary py-2 px-4 text-sm">
                   Registro
                 </Link>
               </>
@@ -122,7 +122,7 @@ export default function Navbar({ isAuthenticated = false, userName, userAvatar, 
                       </div>
                     )}
                     {/* Muestra el nombre del usuario */}
-                    <span className="text-gray-300">{userName}</span>
+                    <span className="text-gray-300 text-sm hidden sm:inline">{userName}</span>
                   </button>
 
                   {/* Menú desplegable del usuario con animación de entrada/salida */}
@@ -138,7 +138,7 @@ export default function Navbar({ isAuthenticated = false, userName, userAvatar, 
                         {user?.role === 'mechanic' && (
                           <Link
                             to={profilePath}
-                            className="flex items-center gap-2 px-4 py-3 text-gray-300 hover:bg-dark-800 transition-colors"
+                            className="flex items-center gap-2 px-4 py-3 text-gray-300 hover:bg-dark-800 transition-colors text-sm"
                             onClick={() => setShowUserMenu(false)}
                           >
                             <User className="w-4 h-4" />
@@ -148,7 +148,7 @@ export default function Navbar({ isAuthenticated = false, userName, userAvatar, 
                         {/* Botón de cerrar sesión en rojo */}
                         <button
                           onClick={handleLogout}
-                          className="w-full flex items-center gap-2 px-4 py-3 text-red-400 hover:bg-dark-800 transition-colors"
+                          className="w-full flex items-center gap-2 px-4 py-3 text-red-400 hover:bg-dark-800 transition-colors text-sm"
                         >
                           <LogOut className="w-4 h-4" />
                           Cerrar Sesión
@@ -165,10 +165,10 @@ export default function Navbar({ isAuthenticated = false, userName, userAvatar, 
                 {/* Esto permite que ServicesPage los oculte pero UserHomePage los muestre */}
                 {!hideNavLinks && (
                   <>
-                    <Link to="/services" className="text-gray-300 hover:text-white transition-colors">
+                    <Link to="/services" className="text-gray-300 hover:text-white transition-colors text-sm">
                       Servicios
                     </Link>
-                    <Link to="/contact" className="text-gray-300 hover:text-white transition-colors">
+                    <Link to="/contact" className="text-gray-300 hover:text-white transition-colors text-sm">
                       Contacto
                     </Link>
                   </>
@@ -186,7 +186,7 @@ export default function Navbar({ isAuthenticated = false, userName, userAvatar, 
                         <User className="w-5 h-5 text-anthracite-950" />
                       </div>
                     )}
-                    <span className="text-gray-300">{userName}</span>
+                    <span className="text-gray-300 text-sm hidden sm:inline">{userName}</span>
                   </button>
 
                   {/* Menú desplegable animado con opciones de perfil y logout */}
@@ -200,7 +200,7 @@ export default function Navbar({ isAuthenticated = false, userName, userAvatar, 
                       >
                         <Link
                           to={profilePath}
-                          className="flex items-center gap-2 px-4 py-3 text-gray-300 hover:bg-dark-800 transition-colors"
+                          className="flex items-center gap-2 px-4 py-3 text-gray-300 hover:bg-dark-800 transition-colors text-sm"
                           onClick={() => setShowUserMenu(false)}
                         >
                           <User className="w-4 h-4" />
@@ -208,7 +208,7 @@ export default function Navbar({ isAuthenticated = false, userName, userAvatar, 
                         </Link>
                         <button
                           onClick={handleLogout}
-                          className="w-full flex items-center gap-2 px-4 py-3 text-red-400 hover:bg-dark-800 transition-colors"
+                          className="w-full flex items-center gap-2 px-4 py-3 text-red-400 hover:bg-dark-800 transition-colors text-sm"
                         >
                           <LogOut className="w-4 h-4" />
                           Cerrar Sesión
@@ -228,9 +228,9 @@ export default function Navbar({ isAuthenticated = false, userName, userAvatar, 
           >
             {/* Muestra X si el menú está abierto, hamburguesa si está cerrado */}
             {isMenuOpen ? (
-              <X className="w-6 h-6 text-gray-300" />
+              <X className="w-5 h-5 sm:w-6 sm:h-6 text-gray-300" />
             ) : (
-              <Menu className="w-6 h-6 text-gray-300" />
+              <Menu className="w-5 h-5 sm:w-6 sm:h-6 text-gray-300" />
             )}
           </button>
         </div>
@@ -245,21 +245,21 @@ export default function Navbar({ isAuthenticated = false, userName, userAvatar, 
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden bg-dark-900 border-t border-anthracite-800"
           >
-            <div className="px-4 py-4 space-y-2">
+            <div className="px-3 sm:px-4 py-3 sm:py-4 space-y-2">
               {/* Links del menú móvil según estado de autenticación */}
               {!isAuthenticated ? (
                 <>
                   {/* Link a servicios en móvil */}
-                  <Link to="/services" className="block px-4 py-2 text-gray-300 hover:bg-dark-800 rounded-lg">
+                  <Link to="/services" className="block px-4 py-2 text-gray-300 hover:bg-dark-800 rounded-lg text-sm">
                     Servicios
                   </Link>
-                  <Link to="/contact" className="block px-4 py-2 text-gray-300 hover:bg-dark-800 rounded-lg">
+                  <Link to="/contact" className="block px-4 py-2 text-gray-300 hover:bg-dark-800 rounded-lg text-sm">
                     Contacto
                   </Link>
-                  <Link to="/login" className="block px-4 py-2 text-primary-400 hover:bg-dark-800 rounded-lg">
+                  <Link to="/login" className="block px-4 py-2 text-primary-400 hover:bg-dark-800 rounded-lg text-sm">
                     Iniciar Sesión
                   </Link>
-                  <Link to="/register" className="block px-4 py-2 bg-primary-600 text-white rounded-lg text-center">
+                  <Link to="/register" className="block px-4 py-2 bg-primary-600 text-white rounded-lg text-center text-sm">
                     Registro
                   </Link>
                 </>
@@ -267,13 +267,13 @@ export default function Navbar({ isAuthenticated = false, userName, userAvatar, 
                 // Si hideNavLinks: mostrar Perfil solo para mecánicos, no para admin
                 <>
                   {user?.role === 'mechanic' && (
-                    <Link to={profilePath} className="block px-4 py-2 text-gray-300 hover:bg-dark-800 rounded-lg">
+                    <Link to={profilePath} className="block px-4 py-2 text-gray-300 hover:bg-dark-800 rounded-lg text-sm">
                       Perfil
                     </Link>
                   )}
                   <button
                     onClick={handleLogout}
-                    className="w-full text-left px-4 py-2 text-red-400 hover:bg-dark-800 rounded-lg"
+                    className="w-full text-left px-4 py-2 text-red-400 hover:bg-dark-800 rounded-lg text-sm"
                   >
                     Cerrar Sesión
                   </button>
@@ -284,20 +284,20 @@ export default function Navbar({ isAuthenticated = false, userName, userAvatar, 
                   {/* RAMA: Soto - En móvil también respeta hideNavLinks */}
                   {!hideNavLinks && (
                     <>
-                      <Link to="/services" className="block px-4 py-2 text-gray-300 hover:bg-dark-800 rounded-lg">
+                      <Link to="/services" className="block px-4 py-2 text-gray-300 hover:bg-dark-800 rounded-lg text-sm">
                         Servicios
                       </Link>
-                      <Link to="/contact" className="block px-4 py-2 text-gray-300 hover:bg-dark-800 rounded-lg">
+                      <Link to="/contact" className="block px-4 py-2 text-gray-300 hover:bg-dark-800 rounded-lg text-sm">
                         Contacto
                       </Link>
                     </>
                   )}
-                  <Link to={profilePath} className="block px-4 py-2 text-gray-300 hover:bg-dark-800 rounded-lg">
+                  <Link to={profilePath} className="block px-4 py-2 text-gray-300 hover:bg-dark-800 rounded-lg text-sm">
                     Perfil
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="w-full text-left px-4 py-2 text-red-400 hover:bg-dark-800 rounded-lg"
+                    className="w-full text-left px-4 py-2 text-red-400 hover:bg-dark-800 rounded-lg text-sm"
                   >
                     Cerrar Sesión
                   </button>
