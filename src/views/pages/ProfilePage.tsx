@@ -8,7 +8,7 @@ import { useAuth } from '../../controllers/AuthContext';
 import { authService } from '../../services/authService';
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [passwordError, setPasswordError] = useState('');
@@ -30,7 +30,8 @@ export default function ProfilePage() {
     vehicleColor:      '',
   });
 
-  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [profileImage, setProfileImage] = useState<string | null>(user?.avatar || null);
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Cargar datos del usuario al montar el componente
@@ -81,6 +82,11 @@ export default function ProfilePage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    
+    // Guardar el archivo para enviarlo después
+    setProfileImageFile(file);
+    
+    // Mostrar preview
     const reader = new FileReader();
     reader.onloadend = () => setProfileImage(reader.result as string);
     reader.readAsDataURL(file);
@@ -106,38 +112,73 @@ export default function ProfilePage() {
         vehicle_color: formData.vehicleColor || undefined,
       };
 
-      // Actualizar perfil
-      const response = await authService.updateProfile(updateData);
-      
-      if (response.success) {
-        // Si hay contraseña nueva, cambiarla
-        if (formData.password) {
-          // Nota: idealmente necesitarías la contraseña actual para validar
-          // Por ahora solo guardaremos el cambio de contraseña si está disponible
+      // Si hay imagen, usar FormData para enviar archivo
+      if (profileImageFile) {
+        const formDataObj = new FormData();
+        formDataObj.append('first_name', updateData.first_name);
+        formDataObj.append('last_name', updateData.last_name);
+        if (updateData.phone) formDataObj.append('phone', updateData.phone);
+        if (updateData.id_number) formDataObj.append('id_number', updateData.id_number);
+        if (updateData.vehicle_brand) formDataObj.append('vehicle_brand', updateData.vehicle_brand);
+        if (updateData.vehicle_model) formDataObj.append('vehicle_model', updateData.vehicle_model);
+        if (updateData.vehicle_plate) formDataObj.append('vehicle_plate', updateData.vehicle_plate);
+        if (updateData.vehicle_year) formDataObj.append('vehicle_year', updateData.vehicle_year);
+        if (updateData.vehicle_color) formDataObj.append('vehicle_color', updateData.vehicle_color);
+        formDataObj.append('profile_picture', profileImageFile);
+
+        // Enviar con FormData
+        const response = await fetch('/api/auth/profile', {
+          method: 'PUT',
+          body: formDataObj,
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Error al guardar perfil');
         }
 
-        // Actualizar localStorage con datos nuevos
-        const stored = localStorage.getItem('parce_user');
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          const updated = {
-            ...parsed,
-            name: formData.name,
-            email: formData.email,
-          };
-          localStorage.setItem('parce_user', JSON.stringify(updated));
+        const result = await response.json();
+        if (!result.success) {
+          throw new Error(result.message || 'Error al guardar perfil');
         }
-
-        setSaved(true);
-        setTimeout(() => setSaved(false), 3000);
-        setFormData(prev => ({ ...prev, password: '' }));
       } else {
-        console.error('Error actualizando perfil:', response.message);
-        alert('Error al actualizar el perfil');
+        // Sin imagen, enviar como JSON
+        const response = await authService.updateProfile(updateData);
+        
+        if (!response.success) {
+          throw new Error(response.message || 'Error al guardar perfil');
+        }
       }
+
+      // Actualizar localStorage con datos nuevos
+      const stored = localStorage.getItem('parce_user');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const updated = {
+          ...parsed,
+          name: formData.name,
+          email: formData.email,
+          avatar: profileImage || parsed.avatar, // Guardar la foto actualizada
+        };
+        localStorage.setItem('parce_user', JSON.stringify(updated));
+        
+        // Actualizar el contexto de autenticación
+        updateUser({
+          name: formData.name,
+          email: formData.email,
+          avatar: profileImage || parsed.avatar,
+        });
+      }
+
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+      setFormData(prev => ({ ...prev, password: '' }));
+      setProfileImageFile(null); // Limpiar archivo después de guardar
     } catch (error) {
       console.error('Error:', error);
-      alert('Error al actualizar el perfil');
+      alert(`Error al actualizar el perfil: ${error instanceof Error ? error.message : 'Error desconocido'}`);
     } finally {
       setIsSaving(false);
     }

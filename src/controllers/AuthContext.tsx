@@ -22,6 +22,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   selectRole: (role: UserRole) => void;
   clearError: () => void;
+  updateUser: (updates: Partial<User>) => void;
   // Mantiene compatibilidad con LoginPage anterior (acepta rol/nombre mock)
   loginMock: (email: string, password: string, role?: UserRole, name?: string) => void;
 }
@@ -169,6 +170,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const clearError = () => setError(null);
 
+  const updateUser = (updates: Partial<User>) => {
+    if (user) {
+      const updated = { ...user, ...updates };
+      setUser(updated);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -180,6 +189,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logout,
         selectRole,
         clearError,
+        updateUser,
         loginMock,
       }}
     >
