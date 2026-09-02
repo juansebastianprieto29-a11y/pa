@@ -256,84 +256,84 @@ export default function ServicesPage() {
     <div className="min-h-screen bg-dark-950">
       {/* RAMA: Soto - hideNavLinks oculta "Servicios" y "Contacto" del navbar en esta página */}
       <Navbar isAuthenticated userName={user?.name || 'Usuario'} hideNavLinks />
-      <Sidebar />
-      <main className="ml-64 pt-16 p-8">
+      <Sidebar hidden={true} />
+      <main className="pt-16 p-4 sm:p-6 md:p-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-white mb-2">SERVICIOS</h1>
-            <p className="text-gray-400">Selecciona el servicio que necesitas o consulta con nuestro asistente</p>
+          <div className="text-center mb-6 sm:mb-8">
+            <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">SERVICIOS</h1>
+            <p className="text-sm sm:text-base text-gray-400">Selecciona el servicio que necesitas o consulta con nuestro asistente</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {currentServices.map((service, index) => (
               <motion.div key={service.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
                 className="card overflow-hidden group cursor-pointer hover:ring-2 hover:ring-gold-500 transition-all duration-300">
                 {/* Imagen */}
-                <div className="relative h-48 overflow-hidden bg-dark-800">
+                <div className="relative h-40 sm:h-48 overflow-hidden bg-dark-800">
                   <img src={service.bgImage} alt={service.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                   />
                   <div className={`absolute inset-0 bg-gradient-to-br ${service.gradient} opacity-50`} />
                   <div className="absolute inset-0 bg-gradient-to-t from-dark-900 via-transparent to-transparent" />
-                  <div className="absolute top-4 left-4">
-                    <div className={`w-11 h-11 bg-gradient-to-br ${service.gradient} rounded-xl flex items-center justify-center shadow-lg`}>
-                      <service.icon className="w-5 h-5 text-white" />
+                  <div className="absolute top-3 sm:top-4 left-3 sm:left-4">
+                    <div className={`w-10 h-10 sm:w-11 sm:h-11 bg-gradient-to-br ${service.gradient} rounded-xl flex items-center justify-center shadow-lg`}>
+                      <service.icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                     </div>
                   </div>
-                  <div className="absolute bottom-3 right-3 text-2xl">{service.emoji}</div>
+                  <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 text-xl sm:text-2xl">{service.emoji}</div>
                 </div>
                 {/* Info */}
-                <div className="p-5 space-y-3">
-                  <h3 className="text-base font-bold text-white leading-snug">{service.title}</h3>
-                  <p className="text-sm text-gray-400 line-clamp-3 leading-relaxed">{service.description}</p>
-                  <div className="flex items-center gap-2 pt-1">
-                    <Clock className="w-4 h-4 text-gold-500" />
-                    <span className="text-xs text-gray-400">Tiempo estimado:</span>
-                    <span className="text-sm font-bold text-gold-400">{service.duration}</span>
+                <div className="p-4 sm:p-5 space-y-2 sm:space-y-3">
+                  <h3 className="text-sm sm:text-base font-bold text-white leading-snug">{service.title}</h3>
+                  <p className="text-xs sm:text-sm text-gray-400 line-clamp-2 sm:line-clamp-3 leading-relaxed">{service.description}</p>
+                  <div className="flex items-center gap-1 sm:gap-2 pt-1">
+                    <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold-500 flex-shrink-0" />
+                    <span className="text-xs text-gray-400">Tiempo:</span>
+                    <span className="text-xs sm:text-sm font-bold text-gold-400">{service.duration}</span>
                   </div>
                   {/* Disponibilidad de inventario — RF 4.3 */}
                   <div className="flex items-center justify-between pt-1">
-                    <div className="flex items-center gap-1.5">
-                      <Package className="w-3.5 h-3.5 text-gray-500" />
-                      <span className="text-xs text-gray-400">En stock:</span>
+                    <div className="flex items-center gap-1">
+                      <Package className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-gray-500 flex-shrink-0" />
+                      <span className="text-xs text-gray-400">Stock:</span>
                       <span className={`text-xs font-bold ${
                         service.stock > 10 ? 'text-green-400' :
                         service.stock > 3  ? 'text-yellow-400' : 'text-red-400'
                       }`}>
-                        {service.stock} {service.stockUnit}
+                        {service.stock}
                       </span>
                     </div>
-                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${
+                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-semibold whitespace-nowrap ${
                       service.stock > 10 ? 'bg-green-500/20 text-green-400' :
                       service.stock > 3  ? 'bg-yellow-500/20 text-yellow-400' :
                       'bg-red-500/20 text-red-400'
                     }`}>
-                      {service.stock > 10 ? 'Disponible' : service.stock > 3 ? 'Poco stock' : 'Último stock'}
+                      {service.stock > 10 ? 'Disponible' : service.stock > 3 ? 'Poco' : 'Último'}
                     </span>
                   </div>
-                  <button onClick={() => handleServiceSelect(service)} className="w-full btn-primary mt-2">PEDIR</button>
+                  <button onClick={() => handleServiceSelect(service)} className="w-full btn-primary mt-2 text-sm">PEDIR</button>
                 </div>
               </motion.div>
             ))}
           </div>
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-4 mt-8">
+            <div className="flex items-center justify-center gap-2 sm:gap-4 mt-6 sm:mt-8">
               <button onClick={() => setCurrentPage(Math.max(0, currentPage - 1))} disabled={currentPage === 0}
-                className="p-3 bg-dark-800 rounded-lg hover:bg-dark-700 disabled:opacity-50 transition-colors">
-                <ChevronLeft className="w-6 h-6 text-gray-400" />
+                className="p-2 sm:p-3 bg-dark-800 rounded-lg hover:bg-dark-700 disabled:opacity-50 transition-colors">
+                <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
               </button>
-              <div className="flex gap-2">
+              <div className="flex gap-1 sm:gap-2">
                 {Array.from({ length: totalPages }).map((_, i) => (
                   <button key={i} onClick={() => setCurrentPage(i)}
-                    className={`w-3 h-3 rounded-full transition-colors ${currentPage === i ? 'bg-gold-500' : 'bg-dark-700 hover:bg-dark-600'}`} />
+                    className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-colors ${currentPage === i ? 'bg-gold-500' : 'bg-dark-700 hover:bg-dark-600'}`} />
                 ))}
               </div>
               <button onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))} disabled={currentPage === totalPages - 1}
-                className="p-3 bg-dark-800 rounded-lg hover:bg-dark-700 disabled:opacity-50 transition-colors">
-                <ChevronRight className="w-6 h-6 text-gray-400" />
+                className="p-2 sm:p-3 bg-dark-800 rounded-lg hover:bg-dark-700 disabled:opacity-50 transition-colors">
+                <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
               </button>
             </div>
           )}
@@ -345,39 +345,40 @@ export default function ServicesPage() {
         {chatOpen && (
           <motion.div initial={{ opacity: 0, y: 40, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 40, scale: 0.95 }} transition={{ duration: 0.25 }}
-            className="fixed bottom-24 right-6 w-96 max-h-[560px] flex flex-col bg-dark-900 border border-anthracite-700 rounded-2xl shadow-2xl z-50 overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-gold-600 to-gold-500">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center">
-                  <Bot className="w-5 h-5 text-anthracite-950" />
+            className="fixed bottom-24 right-4 sm:right-6 w-full sm:w-96 max-w-[calc(100vw-2rem)] max-h-[60vh] sm:max-h-[560px] flex flex-col bg-dark-900 border border-anthracite-700 rounded-2xl shadow-2xl z-50 overflow-hidden">
+            <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 bg-gradient-to-r from-gold-600 to-gold-500">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Bot className="w-4 h-4 sm:w-5 sm:h-5 text-anthracite-950" />
                 </div>
-                <div>
-                  <p className="text-anthracite-950 font-bold text-sm">Asistente PARCE</p>
-                  <p className="text-anthracite-800 text-xs">Diagnóstico de vehículos</p>
+                <div className="min-w-0">
+                  <p className="text-anthracite-950 font-bold text-xs sm:text-sm truncate">Asistente PARCE</p>
+                  <p className="text-anthracite-800 text-xs hidden sm:block">Diagnóstico de vehículos</p>
                 </div>
               </div>
-              <button onClick={() => setChatOpen(false)} className="p-1.5 hover:bg-white/20 rounded-lg transition-colors">
-                <X className="w-5 h-5 text-anthracite-950" />
+              <button onClick={() => setChatOpen(false)} className="p-1.5 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0">
+                <X className="w-4 h-4 sm:w-5 sm:h-5 text-anthracite-950" />
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 max-h-96">
+            <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 min-h-0">
               {messages.map((msg, i) => (
                 <div key={i} className={`flex gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                  <div className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center ${msg.role === 'bot' ? 'bg-gradient-to-br from-gold-500 to-gold-600' : 'bg-dark-600'}`}>
-                    {msg.role === 'bot' ? <Bot className="w-4 h-4 text-anthracite-950" /> : <UserIcon className="w-4 h-4 text-white" />}
+                  <div className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex-shrink-0 flex items-center justify-center text-xs sm:text-sm ${msg.role === 'bot' ? 'bg-gradient-to-br from-gold-500 to-gold-600' : 'bg-dark-600'}`}>
+                    {msg.role === 'bot' ? <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-anthracite-950" /> : <UserIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />}
                   </div>
-                  <div className={`max-w-[75%] flex flex-col gap-2`}>
-                    <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${msg.role === 'bot' ? 'bg-dark-800 text-gray-200 rounded-tl-sm' : 'bg-gold-600 text-anthracite-950 rounded-tr-sm'}`}>
+                  <div className={`max-w-[calc(100%-2rem)] sm:max-w-[75%] flex flex-col gap-2`}>
+                    <div className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-sm leading-relaxed break-words ${msg.role === 'bot' ? 'bg-dark-800 text-gray-200 rounded-tl-sm' : 'bg-gold-600 text-anthracite-950 rounded-tr-sm'}`}>
                       {msg.text}
                     </div>
                     {/* RAMA: Soto - Botón "Pedir servicio" cuando el bot sugiere uno */}
                     {msg.role === 'bot' && msg.suggestedService && (
                       <button
                         onClick={() => handleRequestFromChat(msg.suggestedService!, msg.text)}
-                        className="self-start flex items-center gap-2 px-4 py-2 bg-gold-500 hover:bg-gold-600 text-anthracite-950 text-xs font-bold rounded-xl transition-colors"
+                        className="self-start flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-gold-500 hover:bg-gold-600 text-anthracite-950 text-xs font-bold rounded-xl transition-colors whitespace-nowrap"
                       >
-                        <Wrench className="w-3.5 h-3.5" />
-                        Pedir: {msg.suggestedService}
+                        <Wrench className="w-3 h-3" />
+                        <span className="hidden sm:inline">Pedir: {msg.suggestedService}</span>
+                        <span className="sm:hidden">Pedir</span>
                       </button>
                     )}
                   </div>
@@ -386,26 +387,26 @@ export default function ServicesPage() {
               {/* Indicador de escritura mientras Groq (LLaMA) responde */}
               {isLoading && (
                 <div className="flex gap-2">
-                  <div className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center bg-gradient-to-br from-gold-500 to-gold-600">
-                    <Bot className="w-4 h-4 text-anthracite-950" />
+                  <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex-shrink-0 flex items-center justify-center bg-gradient-to-br from-gold-500 to-gold-600">
+                    <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-anthracite-950" />
                   </div>
-                  <div className="bg-dark-800 px-4 py-3 rounded-2xl rounded-tl-sm flex gap-1 items-center">
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  <div className="bg-dark-800 px-3 sm:px-4 py-2 sm:py-3 rounded-2xl rounded-tl-sm flex gap-1 items-center">
+                    <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
                 </div>
               )}
               <div ref={messagesEndRef} />
             </div>
-            <div className="p-3 border-t border-anthracite-700">
+            <div className="p-2 sm:p-3 border-t border-anthracite-700 bg-dark-900">
               <div className="flex gap-2">
                 <input type="text" value={inputText} onChange={e => setInputText(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleSend()}
-                  placeholder="Describe el problema de tu vehículo..."
-                  className="flex-1 bg-dark-800 border border-anthracite-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-gold-500 transition-colors" />
+                  placeholder="Describe el problema..."
+                  className="flex-1 bg-dark-800 border border-anthracite-700 rounded-xl px-3 sm:px-4 py-2 text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:border-gold-500 transition-colors" />
                 <button onClick={handleSend} disabled={!inputText.trim() || isLoading}
-                  className="p-2.5 bg-gold-500 hover:bg-gold-600 disabled:opacity-40 rounded-xl transition-colors">
+                  className="p-2 sm:p-2.5 bg-gold-500 hover:bg-gold-600 disabled:opacity-40 rounded-xl transition-colors flex-shrink-0">
                   <Send className="w-4 h-4 text-anthracite-950" />
                 </button>
               </div>
@@ -417,11 +418,11 @@ export default function ServicesPage() {
       {/* Botón flotante */}
       <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
         onClick={() => setChatOpen(prev => !prev)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-gold-500 to-gold-600 rounded-full shadow-2xl flex items-center justify-center z-50">
+        className="fixed bottom-6 right-4 sm:right-6 w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-gold-500 to-gold-600 rounded-full shadow-2xl flex items-center justify-center z-50">
         <AnimatePresence mode="wait">
           {chatOpen
-            ? <motion.div key="x" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}><X className="w-6 h-6 text-anthracite-950" /></motion.div>
-            : <motion.div key="chat" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }}><MessageCircle className="w-6 h-6 text-anthracite-950" /></motion.div>
+            ? <motion.div key="x" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}><X className="w-5 h-5 sm:w-6 sm:h-6 text-anthracite-950" /></motion.div>
+            : <motion.div key="chat" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }}><MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 text-anthracite-950" /></motion.div>
           }
         </AnimatePresence>
         {!chatOpen && <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-white text-xs flex items-center justify-center font-bold">?</span>}
