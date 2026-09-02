@@ -328,8 +328,8 @@ export default function MechanicOrdersPage() {
   return (
     <div className="min-h-screen bg-dark-950">
       <Navbar isAuthenticated userName={user?.name || 'Mecánico'} hideNavLinks />
-      <Sidebar hidden={!!activeOrder} />
-      <main className={`${activeOrder ? 'ml-0' : 'ml-64'} pt-16 p-8`}>
+      <Sidebar hidden={true} />
+      <main className="pt-16 p-4 sm:p-6 md:p-8">
         <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} className="space-y-6">
           {activeOrder ? (
             <ActiveServiceView order={activeOrder} onCancel={handleCancel} onFinish={handleFinish}/>

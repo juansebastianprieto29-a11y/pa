@@ -39,8 +39,8 @@ export default function MechanicPaymentPage() {
   return (
     <div className="min-h-screen bg-dark-950">
       <Navbar isAuthenticated userName={user?.name || 'Mecánico'} hideNavLinks />
-      <Sidebar />
-      <main className="ml-64 pt-16 p-8">
+      <Sidebar hidden={true} />
+      <main className="pt-16 p-4 sm:p-6 md:p-8 max-w-2xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl mx-auto space-y-6">
           {confirmed ? (
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
