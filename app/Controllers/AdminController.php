@@ -125,19 +125,20 @@ class AdminController extends Controller
      *
      * PUT /api/admin/users/{id}/status
      */
-    public function updateUserStatus(Request $request): Response
+    public function updateUserStatus(Request $request, int $id): Response
     {
         try {
-            $userId = (int) $request->getAttribute('id');
             $status = $request->input('status');
 
-            if (!in_array($status, ['active', 'inactive', 'suspended'])) {
+            // Validar que status sea válido
+            if (!$status || !in_array($status, ['active', 'inactive', 'suspended'])) {
                 return ResponseFormatter::validationError([
-                    'status' => 'Estado inválido. Debe ser: active, inactive o suspended'
+                    'status' => 'Estado requerido e inválido. Debe ser: active, inactive o suspended'
                 ]);
             }
 
-            $this->adminService->updateUserStatus($userId, $status);
+            // Actualizar el estado del usuario
+            $this->adminService->updateUserStatus($id, $status);
 
             return ResponseFormatter::success(
                 null,

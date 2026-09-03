@@ -100,76 +100,64 @@ export default function ProfilePage() {
       setIsSaving(true);
       
       // Preparar datos a enviar
-      const updateData = {
+      const updateData: any = {
         first_name: formData.name.split(' ')[0],
         last_name: formData.name.split(' ').slice(1).join(' '),
-        phone: formData.phone || undefined,
-        id_number: formData.idNumber || undefined,
-        vehicle_brand: formData.vehicleBrand || undefined,
-        vehicle_model: formData.vehicleModel || undefined,
-        vehicle_plate: formData.vehiclePlate || undefined,
-        vehicle_year: formData.vehicleYear || undefined,
-        vehicle_color: formData.vehicleColor || undefined,
       };
 
-      // Si hay imagen, usar FormData para enviar archivo
+      if (formData.phone) updateData.phone = formData.phone;
+      if (formData.idNumber) updateData.id_number = formData.idNumber;
+      if (formData.vehicleBrand) updateData.vehicle_brand = formData.vehicleBrand;
+      if (formData.vehicleModel) updateData.vehicle_model = formData.vehicleModel;
+      if (formData.vehiclePlate) updateData.vehicle_plate = formData.vehiclePlate;
+      if (formData.vehicleYear) updateData.vehicle_year = formData.vehicleYear;
+      if (formData.vehicleColor) updateData.vehicle_color = formData.vehicleColor;
+
+      // Agregar archivo de perfil si existe
       if (profileImageFile) {
-        const formDataObj = new FormData();
-        formDataObj.append('first_name', updateData.first_name);
-        formDataObj.append('last_name', updateData.last_name);
-        if (updateData.phone) formDataObj.append('phone', updateData.phone);
-        if (updateData.id_number) formDataObj.append('id_number', updateData.id_number);
-        if (updateData.vehicle_brand) formDataObj.append('vehicle_brand', updateData.vehicle_brand);
-        if (updateData.vehicle_model) formDataObj.append('vehicle_model', updateData.vehicle_model);
-        if (updateData.vehicle_plate) formDataObj.append('vehicle_plate', updateData.vehicle_plate);
-        if (updateData.vehicle_year) formDataObj.append('vehicle_year', updateData.vehicle_year);
-        if (updateData.vehicle_color) formDataObj.append('vehicle_color', updateData.vehicle_color);
-        formDataObj.append('profile_picture', profileImageFile);
-
-        // Enviar con FormData
-        const response = await fetch('/api/auth/profile', {
-          method: 'PUT',
-          body: formDataObj,
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Error al guardar perfil');
-        }
-
-        const result = await response.json();
-        if (!result.success) {
-          throw new Error(result.message || 'Error al guardar perfil');
-        }
-      } else {
-        // Sin imagen, enviar como JSON
-        const response = await authService.updateProfile(updateData);
-        
-        if (!response.success) {
-          throw new Error(response.message || 'Error al guardar perfil');
-        }
+        updateData.profile_picture = profileImageFile;
       }
 
-      // Actualizar localStorage con datos nuevos
-      const stored = localStorage.getItem('parce_user');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        const updated = {
-          ...parsed,
-          name: formData.name,
-          email: formData.email,
-          avatar: profileImage || parsed.avatar, // Guardar la foto actualizada
+      console.log('📤 Enviando datos:', updateData);
+
+      // Enviar actualización
+      const response = await authService.updateProfile(updateData);
+
+      console.log('📥 Respuesta del servidor:', response);
+
+      if (!response.success) {
+        console.error('❌ Error en respuesta:', response);
+        throw new Error(response.message || response.error || 'Error al guardar perfil');
+      }
+
+      console.log('✅ Perfil actualizado exitosamente');
+
+      // Los datos devueltos por el servidor ya contienen la foto actualizada
+      if (response.data) {
+        const appUser = {
+          id: response.data.id,
+          name: `${response.data.firstName || response.data.first_name || ''} ${response.data.lastName || response.data.last_name || ''}`.trim(),
+          email: response.data.email,
+          role: 'user' as const,
+          avatar: response.data.profile_picture_url || response.data.profilePictureUrl,
         };
-        localStorage.setItem('parce_user', JSON.stringify(updated));
+
+        console.log('💾 Guardando en localStorage:', appUser);
+
+        // Guardar en localStorage
+        localStorage.setItem('parce_user', JSON.stringify(appUser));
         
         // Actualizar el contexto de autenticación
         updateUser({
-          name: formData.name,
-          email: formData.email,
-          avatar: profileImage || parsed.avatar,
+          name: appUser.name,
+          email: appUser.email,
+          avatar: appUser.avatar,
         });
+
+        // Actualizar preview de imagen con la URL del servidor
+        if (appUser.avatar) {
+          setProfileImage(appUser.avatar);
+        }
       }
 
       setSaved(true);
@@ -177,8 +165,9 @@ export default function ProfilePage() {
       setFormData(prev => ({ ...prev, password: '' }));
       setProfileImageFile(null); // Limpiar archivo después de guardar
     } catch (error) {
-      console.error('Error:', error);
-      alert(`Error al actualizar el perfil: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+      console.error('❌ Error completo:', error);
+      const errorMsg = error instanceof Error ? error.message : 'Error desconocido';
+      alert(`Error al actualizar el perfil: ${errorMsg}`);
     } finally {
       setIsSaving(false);
     }
@@ -204,7 +193,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-dark-950">
-      <Navbar isAuthenticated userName={user?.name || 'Usuario'} />
+      <Navbar isAuthenticated userName={user?.name || 'Usuario'} userAvatar={user?.avatar || profileImage || undefined} />
       <Sidebar hidden={true} />
       <main className="pt-16 p-4 sm:p-6 md:p-8 max-w-2xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl mx-auto">

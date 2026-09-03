@@ -441,50 +441,216 @@ class AuthController extends Controller
      *
      * PUT /api/auth/profile
      *
-     * Permite actualizar los datos de la licencia de conducción.
-     * El estado de la licencia se recalcula automáticamente según la fecha de vencimiento.
+     * Permite actualizar datos personales, información del vehículo y licencia de conducción.
+     * Acepta FormData (con o sin archivo de foto de perfil).
      *
      * @param Request $request HTTP request
      * @return Response HTTP response
      */
     public function profile(Request $request): Response
     {
+        // Agregar logging temprano
+        error_log('=== PROFILE METHOD CALLED ===');
+        error_log('Request Method: ' . $request->method());
+        error_log('Content-Type: ' . ($request->header('Content-Type') ?? 'NOT SET'));
+        error_log('POST keys: ' . implode(', ', array_keys($_POST)));
+        error_log('FILES keys: ' . implode(', ', array_keys($_FILES)));
+
         try {
             // Obtener usuario desde los atributos del request (establecido por AuthMiddleware)
             $user = $request->getAttribute('user');
+
+            error_log('User from request: ' . json_encode($user));
 
             if ($user === null) {
                 return ResponseFormatter::unauthorized('Autenticación requerida');
             }
 
             $userId = (int)$user['id'];
+            error_log('Processing for userId: ' . $userId);
 
-            // Parsear cuerpo JSON
-            $jsonValidation = RequestValidator::parseJsonBody($request);
-            if (!$jsonValidation['valid']) {
-                return ResponseFormatter::error(
-                    $jsonValidation['error'],
-                    null,
-                    $jsonValidation['statusCode']
-                );
-            }
+            // El método PUT /api/auth/profile SIEMPRE recibe FormData
+            // (incluso si no hay archivo, enviamos FormData para consistencia)
+            // No intentamos parsear JSON en este endpoint
 
             // Recopilar campos permitidos para actualización
             $updates = [];
             $now     = date('Y-m-d H:i:s');
 
-            // Número de licencia
+            // ════════════════════════════════════════════════════════════════════════════════
+            // DATOS PERSONALES
+            // ════════════════════════════════════════════════════════════════════════════════
+
+            $firstName = $request->input('first_name');
+            error_log('first_name input: ' . ($firstName ?? 'NULL'));
+            if ($firstName !== null) {
+                $updates['first_name'] = RequestValidator::sanitizeString($firstName);
+            }
+
+            $lastName = $request->input('last_name');
+            error_log('last_name input: ' . ($lastName ?? 'NULL'));
+            if ($lastName !== null) {
+                $updates['last_name'] = RequestValidator::sanitizeString($lastName);
+            }
+
+            $phone = $request->input('phone');
+            if ($phone !== null) {
+                $updates['phone'] = RequestValidator::sanitizeString($phone);
+            }
+
+            $idNumber = $request->input('id_number');
+            if ($idNumber !== null) {
+                $updates['id_number'] = RequestValidator::sanitizeString($idNumber);
+            }
+
+            error_log('After personal data, updates: ' . json_encode($updates));
+
+            // Foto de perfil (FormData)
+            if (isset($_FILES['profile_picture'])) {
+                error_log('Processing profile picture...');
+                $file = $_FILES['profile_picture'];
+                
+                // Verificar que no hay error en la carga del archivo
+                if ($file['error'] !== UPLOAD_ERR_OK) {
+                    $errorMessages = [
+                        UPLOAD_ERR_INI_SIZE => 'Archivo excede el tamaño máximo configurado en php.ini',
+                        UPLOAD_ERR_FORM_SIZE => 'Archivo excede el tamaño máximo del formulario',
+                        UPLOAD_ERR_PARTIAL => 'La carga del archivo fue interrumpida',
+                        UPLOAD_ERR_NO_FILE => 'No se cargó ningún archivo',
+                        UPLOAD_ERR_NO_TMP_DIR => 'Carpeta temporal no disponible',
+                        UPLOAD_ERR_CANT_WRITE => 'No se puede escribir en el disco',
+                        UPLOAD_ERR_EXTENSION => 'Extensión PHP impidió la carga',
+                    ];
+                    error_log('File upload error: ' . ($errorMessages[$file['error']] ?? 'Unknown'));
+                    return ResponseFormatter::validationError([
+                        'profile_picture' => $errorMessages[$file['error']] ?? 'Error desconocido en la carga'
+                    ]);
+                }
+                
+                // Validar tipo MIME
+                $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                $fileMimeType = mime_content_type($file['tmp_name']);
+                
+                if (!in_array($fileMimeType, $allowedMimeTypes)) {
+                    error_log('Invalid MIME type: ' . $fileMimeType);
+                    return ResponseFormatter::validationError([
+                        'profile_picture' => 'Tipo de archivo no permitido. Use JPEG, PNG, GIF o WebP'
+                    ]);
+                }
+
+                // Validar tamaño (máx 5MB)
+                if ($file['size'] > 5 * 1024 * 1024) {
+                    error_log('File too large: ' . $file['size']);
+                    return ResponseFormatter::validationError([
+                        'profile_picture' => 'El archivo es demasiado grande. Máximo 5MB'
+                    ]);
+                }
+
+                // Guardar archivo en directorio public
+                $uploadsDir = __DIR__ . '/../../public/uploads/profiles';
+                if (!is_dir($uploadsDir)) {
+                    mkdir($uploadsDir, 0755, true);
+                }
+
+                $filename = 'user_' . $userId . '_' . time() . '.' . pathinfo($file['name'], PATHINFO_EXTENSION);
+                $filepath = $uploadsDir . '/' . $filename;
+                
+                if (move_uploaded_file($file['tmp_name'], $filepath)) {
+                    $updates['profile_picture_url'] = '/uploads/profiles/' . $filename;
+                    error_log('Profile picture saved: ' . $updates['profile_picture_url']);
+                } else {
+                    error_log('Failed to save profile picture');
+                    return ResponseFormatter::error('Error al guardar la foto de perfil', null, 500);
+                }
+            }
+
+            // ════════════════════════════════════════════════════════════════════════════════
+            // DATOS DEL VEHÍCULO
+            // ════════════════════════════════════════════════════════════════════════════════
+
+            $hasVehicleData = false;
+            $vehicleUpdates = [];
+
+            $vehicleBrand = $request->input('vehicle_brand');
+            if ($vehicleBrand !== null) {
+                $vehicleUpdates['make'] = RequestValidator::sanitizeString($vehicleBrand);
+                $hasVehicleData = true;
+            }
+
+            $vehicleModel = $request->input('vehicle_model');
+            if ($vehicleModel !== null) {
+                $vehicleUpdates['model'] = RequestValidator::sanitizeString($vehicleModel);
+                $hasVehicleData = true;
+            }
+
+            $vehiclePlate = $request->input('vehicle_plate');
+            if ($vehiclePlate !== null) {
+                $vehicleUpdates['license_plate'] = RequestValidator::sanitizeString($vehiclePlate);
+                $hasVehicleData = true;
+            }
+
+            $vehicleYear = $request->input('vehicle_year');
+            if ($vehicleYear !== null) {
+                $vehicleUpdates['year'] = (int)$vehicleYear;
+                $hasVehicleData = true;
+            }
+
+            $vehicleColor = $request->input('vehicle_color');
+            if ($vehicleColor !== null) {
+                $vehicleUpdates['color'] = RequestValidator::sanitizeString($vehicleColor);
+                $hasVehicleData = true;
+            }
+
+            // Si hay datos del vehículo, actualizar o crear el vehículo primario
+            if ($hasVehicleData) {
+                error_log('Processing vehicle data...');
+                $primaryVehicle = Database::fetchOne(
+                    'SELECT id FROM vehicles WHERE user_id = ? AND deleted_at IS NULL ORDER BY is_primary DESC, created_at DESC LIMIT 1',
+                    [$userId]
+                );
+
+                if ($primaryVehicle) {
+                    // Actualizar vehículo existente
+                    $vehicleUpdates['updated_at'] = $now;
+                    Database::update('vehicles', $vehicleUpdates, 'id = ?', [$primaryVehicle['id']]);
+                    error_log('Vehicle updated');
+                } else {
+                    // Crear nuevo vehículo primario
+                    if (!isset($vehicleUpdates['make']) || !isset($vehicleUpdates['license_plate'])) {
+                        error_log('Missing required vehicle data');
+                        return ResponseFormatter::validationError([
+                            'vehicle_brand' => 'Marca del vehículo es requerida',
+                            'vehicle_plate' => 'Placa del vehículo es requerida'
+                        ]);
+                    }
+
+                    $vehicleUpdates['user_id'] = $userId;
+                    $vehicleUpdates['vehicle_type'] = $vehicleUpdates['vehicle_type'] ?? 'car';
+                    $vehicleUpdates['is_primary'] = true;
+                    $vehicleUpdates['status'] = 'active';
+                    $vehicleUpdates['created_at'] = $now;
+                    $vehicleUpdates['updated_at'] = $now;
+
+                    Database::insert('vehicles', $vehicleUpdates);
+                    error_log('Vehicle created');
+                }
+            }
+
+            // ════════════════════════════════════════════════════════════════════════════════
+            // DATOS DE LICENCIA DE CONDUCCIÓN
+            // ════════════════════════════════════════════════════════════════════════════════
+
             $licenseNumber = $request->input('driver_license_number');
             if ($licenseNumber !== null) {
                 $updates['driver_license_number'] = RequestValidator::sanitizeString($licenseNumber);
                 $updates['driver_license_uploaded_at'] = $now;
             }
 
-            // Fecha de vencimiento + recálculo de estado
             $expirationDate = $request->input('driver_license_expiration_date');
             if ($expirationDate !== null) {
                 // Validar formato YYYY-MM-DD
                 if (!\DateTime::createFromFormat('Y-m-d', $expirationDate)) {
+                    error_log('Invalid date format: ' . $expirationDate);
                     return ResponseFormatter::validationError([
                         'driver_license_expiration_date' => 'El formato debe ser YYYY-MM-DD'
                     ]);
@@ -509,26 +675,33 @@ class AuthController extends Controller
                 $updates['driver_license_uploaded_at'] = $now;
             }
 
-            // URL del documento
             $documentUrl = $request->input('driver_license_document_url');
             if ($documentUrl !== null) {
                 $updates['driver_license_document_url'] = RequestValidator::sanitizeString($documentUrl);
             }
 
             // Si no hay nada que actualizar, retornar el perfil actual
-            if (empty($updates)) {
+            if (empty($updates) && !$hasVehicleData) {
+                error_log('No updates, returning current profile');
                 return $this->me($request);
             }
 
-            $updates['updated_at'] = $now;
-
-            // Aplicar actualización
-            $this->authService->updateProfile($userId, $updates);
+            // Aplicar actualización de datos del usuario
+            if (!empty($updates)) {
+                error_log('Saving updates: ' . json_encode($updates));
+                $updates['updated_at'] = $now;
+                $this->authService->updateProfile($userId, $updates);
+                error_log('Updates saved');
+            }
 
             // Retornar perfil actualizado
+            error_log('Returning updated profile');
             return $this->me($request);
 
         } catch (\Exception $e) {
+            error_log('Exception in profile method: ' . $e->getMessage());
+            error_log('Exception file: ' . $e->getFile());
+            error_log('Exception line: ' . $e->getLine());
             return ErrorHandler::handleException($e);
         }
     }

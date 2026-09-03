@@ -20,21 +20,42 @@ class ApiClient {
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseURL}${endpoint}`;
+    
+    // No establecer Content-Type si el body es FormData (el navegador lo hace automáticamente)
+    const headers: Record<string, string> = {
+      Accept: 'application/json',
+      ...(options.headers as Record<string, string>),
+    };
+
+    // Solo agregar Content-Type: application/json si NO es FormData
+    if (!(options.body instanceof FormData)) {
+      headers['Content-Type'] = 'application/json';
+    }
+
     const config: RequestInit = {
       ...options,
       credentials: 'include', // necesario para enviar/recibir la cookie de sesión PHP
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        ...options.headers,
-      },
+      headers,
     };
 
     try {
       const response = await fetch(url, config);
-      const data = await response.json();
-      return data as ApiResponse<T>;
-    } catch {
+      const text = await response.text();
+      
+      // Intentar parsear como JSON
+      try {
+        const data = JSON.parse(text);
+        return data as ApiResponse<T>;
+      } catch (jsonError) {
+        // Si no es JSON válido, devolver el texto como error
+        console.error('❌ Respuesta no es JSON válido:', text);
+        return {
+          success: false,
+          error: `Respuesta inválida del servidor: ${text.substring(0, 200)}`,
+        };
+      }
+    } catch (err) {
+      console.error('❌ Error de red:', err);
       return {
         success: false,
         error: 'Error de red. Verifica tu conexión o que el servidor PHP esté corriendo.',
@@ -49,14 +70,14 @@ class ApiClient {
   async post<T>(endpoint: string, body?: unknown): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'POST',
-      body: body ? JSON.stringify(body) : undefined,
+      body: body instanceof FormData ? body : (body ? JSON.stringify(body) : undefined),
     });
   }
 
   async put<T>(endpoint: string, body?: unknown): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'PUT',
-      body: body ? JSON.stringify(body) : undefined,
+      body: body instanceof FormData ? body : (body ? JSON.stringify(body) : undefined),
     });
   }
 
@@ -67,7 +88,7 @@ class ApiClient {
   async patch<T>(endpoint: string, body?: unknown): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'PATCH',
-      body: body ? JSON.stringify(body) : undefined,
+      body: body instanceof FormData ? body : (body ? JSON.stringify(body) : undefined),
     });
   }
 }

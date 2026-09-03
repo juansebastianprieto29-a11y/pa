@@ -121,8 +121,24 @@ export const authService = {
     vehicle_plate?: string;
     vehicle_year?: string;
     vehicle_color?: string;
+    profile_picture?: File;
   }): Promise<ApiResponse<ApiUser>> {
-    return apiClient.put<ApiUser>(API_ENDPOINTS.AUTH.PROFILE || '/api/auth/profile', data);
+    // Siempre usar FormData para consistencia y mejor manejo de archivos
+    const formData = new FormData();
+    
+    if (data.first_name !== undefined) formData.append('first_name', data.first_name);
+    if (data.last_name !== undefined) formData.append('last_name', data.last_name);
+    if (data.phone !== undefined) formData.append('phone', data.phone);
+    if (data.id_number !== undefined) formData.append('id_number', data.id_number);
+    if (data.driver_license_number !== undefined) formData.append('driver_license_number', data.driver_license_number);
+    if (data.vehicle_brand !== undefined) formData.append('vehicle_brand', data.vehicle_brand);
+    if (data.vehicle_model !== undefined) formData.append('vehicle_model', data.vehicle_model);
+    if (data.vehicle_plate !== undefined) formData.append('vehicle_plate', data.vehicle_plate);
+    if (data.vehicle_year !== undefined) formData.append('vehicle_year', data.vehicle_year);
+    if (data.vehicle_color !== undefined) formData.append('vehicle_color', data.vehicle_color);
+    if (data.profile_picture !== undefined) formData.append('profile_picture', data.profile_picture);
+
+    return apiClient.put<ApiUser>(API_ENDPOINTS.AUTH.PROFILE || '/api/auth/profile', formData);
   },
 
   async changePassword(currentPassword: string, newPassword: string): Promise<ApiResponse<null>> {
