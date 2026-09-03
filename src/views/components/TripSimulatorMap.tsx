@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { reverseGeocode } from '../../services/mapService';
 
 interface Point {
   lat: number;
@@ -31,6 +32,7 @@ export default function TripSimulatorMap({
   const [clickStage, setClickStage] = useState<'pickup' | 'dest'>('pickup');
   const [pickup, setPickup] = useState<Point | null>(initialPickup || null);
   const [destination, setDestination] = useState<Point | null>(initialDestination || null);
+  const [loadingAddress, setLoadingAddress] = useState(false);
 
   // Iconos personalizados
   const pickupIcon = L.divIcon({
@@ -66,12 +68,17 @@ export default function TripSimulatorMap({
     }).addTo(map);
 
     // Click en el mapa para seleccionar puntos
-    map.on('click', (e: L.LeafletMouseEvent) => {
+    map.on('click', async (e: L.LeafletMouseEvent) => {
+      setLoadingAddress(true);
+      
+      // Obtener la dirección usando geocodificación inversa
+      const address = await reverseGeocode(e.latlng.lat, e.latlng.lng);
+      
       if (clickStage === 'pickup') {
         const newPickup = {
           lat: e.latlng.lat,
           lng: e.latlng.lng,
-          label: 'Punto seleccionado en el mapa',
+          label: address,
         };
         setPickup(newPickup);
         onPickupChange?.(newPickup);
@@ -80,12 +87,14 @@ export default function TripSimulatorMap({
         const newDest = {
           lat: e.latlng.lat,
           lng: e.latlng.lng,
-          label: 'Destino seleccionado en el mapa',
+          label: address,
         };
         setDestination(newDest);
         onDestinationChange?.(newDest);
         setClickStage('pickup');
       }
+      
+      setLoadingAddress(false);
     });
 
     mapInstance.current = map;
@@ -232,7 +241,12 @@ export default function TripSimulatorMap({
     >
       {/* Indicador de etapa de clic */}
       <div className="absolute top-4 left-4 z-[1000] bg-dark-900/90 backdrop-blur-sm px-4 py-2 rounded-lg border border-anthracite-700 text-sm">
-        {clickStage === 'pickup' ? (
+        {loadingAddress ? (
+          <span className="text-yellow-400 flex items-center gap-2">
+            <span className="inline-block w-3 h-3 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin" />
+            Obteniendo dirección...
+          </span>
+        ) : clickStage === 'pickup' ? (
           <span className="text-green-400">📍 Haz clic para seleccionar punto de recogida</span>
         ) : (
           <span className="text-red-400">🎯 Haz clic para seleccionar destino</span>

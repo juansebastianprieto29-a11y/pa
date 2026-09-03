@@ -30,6 +30,9 @@ export default function AdminUsersPage() {
   
   // Estado de actualización
   const [updatingStatus, setUpdatingStatus] = useState<number | null>(null);
+  
+  // Estado para ver detalles de usuario
+  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
 
   // Cargar usuarios
   const loadUsers = async () => {
@@ -114,8 +117,8 @@ export default function AdminUsersPage() {
   return (
     <div className="min-h-screen bg-dark-950">
       <Navbar isAuthenticated userName={user?.name || 'Admin'} hideNavLinks />
-      <Sidebar />
-      <main className="ml-64 pt-16 p-8">
+      <Sidebar hidden={true} />
+      <main className="pt-16 p-4 sm:p-6 md:p-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
           
           {/* Header */}
@@ -244,9 +247,6 @@ export default function AdminUsersPage() {
                             <div>
                               <p className="text-white font-medium">{u.first_name || ''} {u.last_name || ''}</p>
                               <p className="text-gray-500 text-xs">{u.email}</p>
-                              <p className="text-gray-600 text-xs mt-0.5">
-                                Registro: {new Date(u.created_at).toLocaleDateString('es-CO')}
-                              </p>
                             </div>
                           </td>
                           <td className="px-4 py-3 text-gray-300">{u.phone || '-'}</td>
@@ -295,29 +295,38 @@ export default function AdminUsersPage() {
                                 <button 
                                   onClick={() => handleStatusChange(u.id, 'suspended')}
                                   disabled={updatingStatus === u.id}
-                                  className="p-1.5 hover:bg-dark-700 rounded-lg transition-colors text-gray-400 hover:text-yellow-400 disabled:opacity-50" 
-                                  title="Suspender"
+                                  className="flex items-center gap-1.5 px-2.5 py-1.5 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded-lg transition-colors disabled:opacity-50 text-xs font-medium" 
+                                  title="Suspender usuario"
                                 >
                                   {updatingStatus === u.id ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
                                   ) : (
-                                    <UserX className="w-4 h-4" />
+                                    <UserX className="w-3.5 h-3.5" />
                                   )}
+                                  {!updatingStatus && 'Suspender'}
                                 </button>
                               ) : (
                                 <button 
                                   onClick={() => handleStatusChange(u.id, 'active')}
                                   disabled={updatingStatus === u.id}
-                                  className="p-1.5 hover:bg-dark-700 rounded-lg transition-colors text-gray-400 hover:text-green-400 disabled:opacity-50" 
-                                  title="Activar"
+                                  className="flex items-center gap-1.5 px-2.5 py-1.5 bg-green-500/10 hover:bg-green-500/20 text-green-400 border border-green-500/30 rounded-lg transition-colors disabled:opacity-50 text-xs font-medium" 
+                                  title="Activar usuario"
                                 >
                                   {updatingStatus === u.id ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
                                   ) : (
-                                    <UserCheck className="w-4 h-4" />
+                                    <UserCheck className="w-3.5 h-3.5" />
                                   )}
+                                  {!updatingStatus && 'Activar'}
                                 </button>
                               )}
+                              <button 
+                                onClick={() => setSelectedUser(u)}
+                                className="flex items-center justify-center p-1.5 hover:bg-dark-700 rounded-lg transition-colors text-gray-400 hover:text-blue-400" 
+                                title="Ver detalles"
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                              </button>
                             </div>
                           </td>
                         </tr>
@@ -330,6 +339,151 @@ export default function AdminUsersPage() {
           </div>
         </motion.div>
       </main>
+
+      {/* Modal de detalles del usuario */}
+      {selectedUser && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="bg-dark-800 rounded-xl border border-anthracite-700 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-anthracite-700 sticky top-0 bg-dark-800">
+              <h2 className="text-2xl font-bold text-white">Detalles del Usuario</h2>
+              <button
+                onClick={() => setSelectedUser(null)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-6">
+              {/* Información Personal */}
+              <div>
+                <h3 className="text-lg font-semibold text-gold-400 mb-4">Información Personal</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-gray-400 text-sm">Nombre</p>
+                    <p className="text-white font-medium">{selectedUser.first_name} {selectedUser.last_name}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm">Email</p>
+                    <p className="text-white font-medium break-all">{selectedUser.email}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm">Teléfono</p>
+                    <p className="text-white font-medium">{selectedUser.phone || 'No registrado'}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm">Estado</p>
+                    <p className="text-white font-medium">{getStatusLabel(selectedUser.account_status)}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Roles */}
+              <div>
+                <h3 className="text-lg font-semibold text-gold-400 mb-4">Roles</h3>
+                <div className="flex flex-wrap gap-2">
+                  {selectedUser.roles && selectedUser.roles.length > 0 ? (
+                    selectedUser.roles.split(', ').map((role, idx) => {
+                      const roleLabel = role === 'Customer' ? 'Usuario' : 
+                                      role === 'Mechanic' ? 'Mecánico' : 
+                                      role === 'Administrator' ? 'Administrador' : role;
+                      const roleColor = role === 'Customer' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' :
+                                      role === 'Mechanic' ? 'bg-purple-500/20 text-purple-400 border-purple-500/30' :
+                                      'bg-red-500/20 text-red-400 border-red-500/30';
+                      return (
+                        <span key={idx} className={`px-3 py-1.5 text-sm rounded-lg border ${roleColor}`}>
+                          {roleLabel}
+                        </span>
+                      );
+                    })
+                  ) : (
+                    <span className="text-gray-500">Sin roles asignados</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Vehículos */}
+              <div>
+                <h3 className="text-lg font-semibold text-gold-400 mb-4">Vehículos Registrados</h3>
+                {selectedUser.vehicle_count > 0 ? (
+                  <div className="bg-dark-900/50 rounded-lg p-4">
+                    <p className="text-white font-medium">{selectedUser.vehicle_count} vehículo{selectedUser.vehicle_count !== 1 ? 's' : ''} registrado{selectedUser.vehicle_count !== 1 ? 's' : ''}</p>
+                    <p className="text-gray-400 text-sm mt-2">Para ver los detalles completos, consulta la sección de Gestión de Vehículos</p>
+                  </div>
+                ) : (
+                  <div className="bg-dark-900/50 rounded-lg p-4">
+                    <p className="text-gray-400">No tiene vehículos registrados</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Fechas */}
+              <div>
+                <h3 className="text-lg font-semibold text-gold-400 mb-4">Historial</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-gray-400 text-sm">Fecha de Registro</p>
+                    <p className="text-white font-medium">
+                      {selectedUser.created_at ? (() => {
+                        try {
+                          const date = new Date(selectedUser.created_at);
+                          if (isNaN(date.getTime())) throw new Error('Invalid date');
+                          return date.toLocaleDateString('es-CO', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          });
+                        } catch {
+                          return selectedUser.created_at;
+                        }
+                      })() : 'No disponible'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm">Último Acceso</p>
+                    <p className="text-white font-medium">
+                      {selectedUser.last_login_at ? (() => {
+                        try {
+                          const date = new Date(selectedUser.last_login_at);
+                          if (isNaN(date.getTime())) throw new Error('Invalid date');
+                          return date.toLocaleDateString('es-CO', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          });
+                        } catch {
+                          return selectedUser.last_login_at;
+                        }
+                      })() : 'Nunca'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Acciones */}
+              <div className="border-t border-anthracite-700 pt-6 flex gap-3">
+                <button
+                  onClick={() => setSelectedUser(null)}
+                  className="flex-1 px-4 py-2 bg-dark-700 hover:bg-dark-600 text-white rounded-lg transition-colors"
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

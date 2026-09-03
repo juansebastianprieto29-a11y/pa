@@ -8,12 +8,13 @@ import { useAuth } from '../../controllers/AuthContext';
 import { authService } from '../../services/authService';
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [passwordError, setPasswordError] = useState('');
   const [saved, setSaved] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Inicializa con los datos del usuario actual o valores por defecto editables
   const [formData, setFormData] = useState({
@@ -29,7 +30,8 @@ export default function ProfilePage() {
     vehicleColor:      '',
   });
 
-  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [profileImage, setProfileImage] = useState<string | null>(user?.avatar || null);
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Cargar datos del usuario al montar el componente
@@ -80,26 +82,95 @@ export default function ProfilePage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    
+    // Guardar el archivo para enviarlo después
+    setProfileImageFile(file);
+    
+    // Mostrar preview
     const reader = new FileReader();
     reader.onloadend = () => setProfileImage(reader.result as string);
     reader.readAsDataURL(file);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.password && !validatePassword(formData.password)) return;
 
-    // Guarda en localStorage para persistir el nombre actualizado
-    const stored = localStorage.getItem('parce_user');
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      const updated = { ...parsed, name: formData.name, email: formData.email };
-      localStorage.setItem('parce_user', JSON.stringify(updated));
-    }
+    try {
+      setIsSaving(true);
+      
+      // Preparar datos a enviar
+      const updateData: any = {
+        first_name: formData.name.split(' ')[0],
+        last_name: formData.name.split(' ').slice(1).join(' '),
+      };
 
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
-    setFormData(prev => ({ ...prev, password: '' }));
+      if (formData.phone) updateData.phone = formData.phone;
+      if (formData.idNumber) updateData.id_number = formData.idNumber;
+      if (formData.vehicleBrand) updateData.vehicle_brand = formData.vehicleBrand;
+      if (formData.vehicleModel) updateData.vehicle_model = formData.vehicleModel;
+      if (formData.vehiclePlate) updateData.vehicle_plate = formData.vehiclePlate;
+      if (formData.vehicleYear) updateData.vehicle_year = formData.vehicleYear;
+      if (formData.vehicleColor) updateData.vehicle_color = formData.vehicleColor;
+
+      // Agregar archivo de perfil si existe
+      if (profileImageFile) {
+        updateData.profile_picture = profileImageFile;
+      }
+
+      console.log('📤 Enviando datos:', updateData);
+
+      // Enviar actualización
+      const response = await authService.updateProfile(updateData);
+
+      console.log('📥 Respuesta del servidor:', response);
+
+      if (!response.success) {
+        console.error('❌ Error en respuesta:', response);
+        throw new Error(response.message || response.error || 'Error al guardar perfil');
+      }
+
+      console.log('✅ Perfil actualizado exitosamente');
+
+      // Los datos devueltos por el servidor ya contienen la foto actualizada
+      if (response.data) {
+        const appUser = {
+          id: response.data.id,
+          name: `${response.data.firstName || response.data.first_name || ''} ${response.data.lastName || response.data.last_name || ''}`.trim(),
+          email: response.data.email,
+          role: 'user' as const,
+          avatar: response.data.profile_picture_url || response.data.profilePictureUrl,
+        };
+
+        console.log('💾 Guardando en localStorage:', appUser);
+
+        // Guardar en localStorage
+        localStorage.setItem('parce_user', JSON.stringify(appUser));
+        
+        // Actualizar el contexto de autenticación
+        updateUser({
+          name: appUser.name,
+          email: appUser.email,
+          avatar: appUser.avatar,
+        });
+
+        // Actualizar preview de imagen con la URL del servidor
+        if (appUser.avatar) {
+          setProfileImage(appUser.avatar);
+        }
+      }
+
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+      setFormData(prev => ({ ...prev, password: '' }));
+      setProfileImageFile(null); // Limpiar archivo después de guardar
+    } catch (error) {
+      console.error('❌ Error completo:', error);
+      const errorMsg = error instanceof Error ? error.message : 'Error desconocido';
+      alert(`Error al actualizar el perfil: ${errorMsg}`);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const field = (
@@ -122,9 +193,9 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-dark-950">
-      <Navbar isAuthenticated userName={user?.name || 'Usuario'} />
-      <Sidebar />
-      <main className="ml-64 pt-16 p-8">
+      <Navbar isAuthenticated userName={user?.name || 'Usuario'} userAvatar={user?.avatar || profileImage || undefined} />
+      <Sidebar hidden={true} />
+      <main className="pt-16 p-4 sm:p-6 md:p-8 max-w-2xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl mx-auto">
 
           <button onClick={() => navigate(-1)}
@@ -251,8 +322,19 @@ export default function ProfilePage() {
 
               {/* Botones */}
               <div className="space-y-3 pt-2">
-                <button type="submit" className="w-full btn-primary py-3 flex items-center justify-center gap-2">
-                  {saved ? <><Check className="w-5 h-5" /> ¡Cambios guardados!</> : 'Actualizar cambios'}
+                <button type="submit" disabled={isSaving} className="w-full btn-primary py-3 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                  {isSaving ? (
+                    <>
+                      <span className="inline-block w-4 h-4 border-2 border-anthracite-950 border-t-transparent rounded-full animate-spin" />
+                      Guardando...
+                    </>
+                  ) : saved ? (
+                    <>
+                      <Check className="w-5 h-5" /> ¡Cambios guardados!
+                    </>
+                  ) : (
+                    'Actualizar cambios'
+                  )}
                 </button>
                 <button type="button"
                   className="w-full py-3 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg transition-colors border border-red-600/50 text-sm font-semibold">

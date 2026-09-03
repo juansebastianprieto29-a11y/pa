@@ -141,7 +141,7 @@ export default function ServiceInProgressPage() {
       <Navbar isAuthenticated userName={user?.name || 'Usuario'} hideNavLinks />
       {/* RAMA: Soto - Sidebar oculto en servicio en curso, igual que la vista del mecánico */}
       <Sidebar hidden />
-      <main className="ml-0 pt-16 p-8">
+      <main className="pt-16 p-4 sm:p-6 md:p-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
           {/* RAMA: Soto - Título con estado igual al del mecánico */}
           <div className="flex items-center justify-between">

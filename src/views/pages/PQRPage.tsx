@@ -54,8 +54,8 @@ export default function PQRPage() {
   return (
     <div className="min-h-screen bg-dark-950">
       <Navbar isAuthenticated userName={user?.name || 'Usuario'} hideNavLinks />
-      <Sidebar />
-      <main className="ml-64 pt-16 p-8">
+      <Sidebar hidden={true} />
+      <main className="pt-16 p-4 sm:p-6 md:p-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl mx-auto space-y-6">
           <div>
             <h1 className="text-3xl font-bold text-white">PQR</h1>

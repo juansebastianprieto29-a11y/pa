@@ -30,9 +30,9 @@ export default function MechanicHomePage() {
   return (
     <div className="min-h-screen bg-dark-950">
       <Navbar isAuthenticated userName={user?.name || 'Mecánico'} hideNavLinks />
-      <Sidebar />
+      <Sidebar hidden={true} />
 
-      <main className="ml-64 pt-16 p-8">
+      <main className="pt-16 p-4 sm:p-6 md:p-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

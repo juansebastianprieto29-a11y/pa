@@ -1,6 +1,7 @@
 // Servicio de mapas y geocodificación
 
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
+const NOMINATIM_REVERSE_URL = 'https://nominatim.openstreetmap.org/reverse';
 const OSRM_URL = 'https://router.project-osrm.org/route/v1/driving';
 
 export interface Coordinates {
@@ -56,6 +57,38 @@ export async function searchAddress(query: string): Promise<GeocodingResult[]> {
   } catch (error) {
     console.error('Error buscando dirección:', error);
     return [];
+  }
+}
+
+/**
+ * Geocodificación inversa: convierte coordenadas a dirección
+ */
+export async function reverseGeocode(lat: number, lng: number): Promise<string> {
+  try {
+    const params = new URLSearchParams({
+      lat: lat.toString(),
+      lon: lng.toString(),
+      format: 'json',
+      addressdetails: '1',
+      zoom: '18',
+    });
+
+    const response = await fetch(`${NOMINATIM_REVERSE_URL}?${params}`, {
+      headers: {
+        'User-Agent': 'PARCE-App/1.0',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Error en geocodificación inversa');
+    }
+
+    const data: GeocodingResult = await response.json();
+    return data.display_name || `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+  } catch (error) {
+    console.error('Error en geocodificación inversa:', error);
+    // Retornar coordenadas como fallback
+    return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
   }
 }
 
