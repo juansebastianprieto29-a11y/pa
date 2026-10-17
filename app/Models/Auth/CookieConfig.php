@@ -12,7 +12,7 @@ use InvalidArgumentException;
  *
  * Requisitos: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6, 25.3
  */
-readonly class CookieConfig
+class CookieConfig
 {
     /**
      * Crea una nueva configuración de cookie
@@ -28,13 +28,13 @@ readonly class CookieConfig
      * @throws InvalidArgumentException Si la validación falla
      */
     public function __construct(
-        public string $name,
-        public int $lifetime,
-        public string $path,
-        public string $domain,
-        public bool $secure,
-        public bool $httpOnly,
-        public string $sameSite
+        public readonly string $name,
+        public readonly int $lifetime,
+        public readonly string $path,
+        public readonly string $domain,
+        public readonly bool $secure,
+        public readonly bool $httpOnly,
+        public readonly string $sameSite
     ) {
         // Requisito 12.5: La ruta debe comenzar con '/'
         if (!str_starts_with($this->path, '/')) {

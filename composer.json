@@ -3,7 +3,7 @@
     "description": "P.A.R.C.E - Plataforma de Asistencia Rápida para Conductores en Emergencia",
     "type": "project",
     "require": {
-        "php": ">=8.2",
+        "php": ">=8.1",
         "phpmailer/phpmailer": "^7.1",
         "resend/resend-php": "^1.8"
     },
@@ -20,7 +20,8 @@
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",
-        "sort-packages": true
+        "sort-packages": true,
+        "platform-check": false
     },
     "require-dev": {
         "phpunit/phpunit": "^10"

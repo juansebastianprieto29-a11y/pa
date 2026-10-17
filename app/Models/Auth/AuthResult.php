@@ -12,7 +12,7 @@ use InvalidArgumentException;
  *
  * Requisitos: 10.1, 10.2, 10.3, 10.4, 10.5, 25.1
  */
-readonly class AuthResult
+class AuthResult
 {
     /**
      * Crea un nuevo resultado de autenticación
@@ -26,11 +26,11 @@ readonly class AuthResult
      * @throws InvalidArgumentException Si la validación falla
      */
     public function __construct(
-        public bool $success,
-        public ?int $userId,
-        public ?string $sessionId,
-        public ?string $message,
-        public ?array $errors = null
+        public readonly bool $success,
+        public readonly ?int $userId,
+        public readonly ?string $sessionId,
+        public readonly ?string $message,
+        public readonly ?array $errors = null
     ) {
         // Requisito 10.3: Si success es verdadero, userId y sessionId no deben ser nulos
         if ($this->success && ($this->userId === null || $this->sessionId === null)) {

@@ -12,7 +12,7 @@ use InvalidArgumentException;
  *
  * Requisitos: 13.1, 13.2, 13.3, 13.4, 13.5, 25.4
  */
-readonly class RateLimitConfig
+class RateLimitConfig
 {
     /**
      * Crea una nueva configuración de límite de tasa

@@ -12,7 +12,7 @@ use InvalidArgumentException;
  *
  * Requisitos: 11.1, 11.2, 11.3, 11.4, 11.5, 25.2
  */
-readonly class SessionData
+class SessionData
 {
     /**
      * Crea un nuevo objeto de datos de sesión
@@ -28,13 +28,13 @@ readonly class SessionData
      * @throws InvalidArgumentException Si la validación falla
      */
     public function __construct(
-        public string $id,
-        public int $userId,
-        public string $ipAddress,
-        public string $userAgent,
-        public int $lastActivity,
-        public int $createdAt,
-        public ?int $expiresAt = null
+        public readonly string $id,
+        public readonly int $userId,
+        public readonly string $ipAddress,
+        public readonly string $userAgent,
+        public readonly int $lastActivity,
+        public readonly int $createdAt,
+        public readonly ?int $expiresAt = null
     ) {
         // Requisito 11.3: userId debe ser un entero positivo
         if ($this->userId <= 0) {
